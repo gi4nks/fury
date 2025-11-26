@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = "file:./dev.db"
+}
+
+model Bookmark {
+  id           String    @id @default(cuid())
+  url          String    @unique
+  title        String
+  description  String?
+  sourceFolder String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  description String?
+  createdAt DateTime   @default(now())
+  bookmarks Bookmark[]
+}
+
+model ImportSession {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  fileName           String?
+  totalBookmarks     Int
+  successfulBookmarks Int
+  failedBookmarks    Int
+}
