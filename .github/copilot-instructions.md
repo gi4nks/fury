@@ -1,4 +1,4 @@
-<Goals>
+n<Goals>
 - Reduce the likelihood of a coding agent pull request getting rejected by the user due to
 generating code that fails the continuous integration build, fails a validation pipeline, or
 having misbehavior.
@@ -91,6 +91,13 @@ Required: Node.js 20+, npm
 Optional but recommended: `.env` file with `OPENAI_API_KEY` for AI features
 Database: SQLite (file-based, no additional setup required)
 Ports: Development server uses 3000 (configurable via Next.js)
+
+Categorization System:
+- **Hierarchical Categories**: Supports parent/child category relationships (e.g., "Web Development" under "Development")
+- **23 Main Categories**: Technology, Development, Design, Business, Education, Entertainment, News & Media, Shopping, Social, Health & Fitness, Travel, Finance, Science, Sports, Food & Cooking, Home & Garden, Automotive, and subcategories
+- **Intelligent Matching**: Uses URL patterns, keyword analysis, content indicators, and weighted scoring
+- **AI Confidence Scoring**: Provides confidence levels (0-100) for categorization suggestions
+- **Domain Recognition**: Special handling for well-known platforms (GitHub, YouTube, Spotify, etc.)
 </BuildInstructions>
 
 <ProjectLayout>
