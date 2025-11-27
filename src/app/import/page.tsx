@@ -6,6 +6,7 @@ type ImportResult = {
   totalBookmarks: number;
   successfulBookmarks: number;
   failedBookmarks: number;
+  skippedBookmarks: number;
 };
 
 export default function ImportPageClient() {
@@ -49,6 +50,7 @@ export default function ImportPageClient() {
           totalBookmarks: body.totalBookmarks,
           successfulBookmarks: body.successfulBookmarks,
           failedBookmarks: body.failedBookmarks,
+          skippedBookmarks: body.skippedBookmarks,
         });
       }
     } catch (fetchError) {
@@ -100,6 +102,9 @@ export default function ImportPageClient() {
               registered
               {result.failedBookmarks
                 ? `, ${result.failedBookmarks} failed`
+                : ""}
+              {result.skippedBookmarks
+                ? `, ${result.skippedBookmarks} skipped (invalid URLs)`
                 : ""}.
             </p>
           </div>

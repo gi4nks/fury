@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@lib/db";
+import { Prisma } from "@prisma/client";
 
 const MAX_LIMIT = 100;
 
@@ -14,22 +15,28 @@ export async function GET(request: Request) {
     );
     const offset = Math.max(0, Number(url.searchParams.get("offset") ?? "0") || 0);
 
-    const searchFilter = q
-      ? {
-          OR: [
-            { title: { contains: q, mode: "insensitive" } },
-            { url: { contains: q, mode: "insensitive" } },
-            { description: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined;
+    const conditions: Prisma.BookmarkWhereInput[] = [];
+    if (categoryId) {
+      conditions.push({ categoryId });
+    }
+    if (q) {
+      conditions.push({
+        OR: [
+          { title: { contains: q } },
+          { url: { contains: q } },
+          { description: { contains: q } },
+          { metaTitle: { contains: q } },
+          { metaDescription: { contains: q } },
+          { keywords: { contains: q } },
+          { summary: { contains: q } },
+          { aiCategory: { contains: q } },
+          { ogTitle: { contains: q } },
+          { ogDescription: { contains: q } },
+        ],
+      });
+    }
 
-    const filters = [
-      categoryId ? { categoryId } : undefined,
-      searchFilter,
-    ].filter(Boolean);
-
-    const where = filters.length > 0 ? { AND: filters } : undefined;
+    const where: Prisma.BookmarkWhereInput = conditions.length > 0 ? { AND: conditions } : {};
 
     const [total, items] = await Promise.all([
       prisma.bookmark.count({ where }),
@@ -56,9 +63,9 @@ export async function GET(request: Request) {
         sourceFolder: bookmark.sourceFolder,
         category: bookmark.category
           ? {
-              id: bookmark.category.id,
-              name: bookmark.category.name,
-            }
+            id: bookmark.category.id,
+            name: bookmark.category.name,
+          }
           : null,
       })),
     });

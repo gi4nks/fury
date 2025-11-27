@@ -1,5 +1,9 @@
 import Link from "next/link";
 import prisma from "@lib/db";
+import InitDbButton from "@components/InitDbButton";
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function HomePage() {
   const [totalBookmarks, totalCategories, lastImport] = await Promise.all([
@@ -32,6 +36,10 @@ export default async function HomePage() {
             <Link href="/bookmarks" className="btn btn-outline btn-primary">
               View bookmarks
             </Link>
+            <Link href="/analytics" className="btn btn-outline btn-secondary">
+              Analytics
+            </Link>
+            <InitDbButton />
           </div>
         </div>
       </div>
@@ -55,9 +63,9 @@ export default async function HomePage() {
             <p className="text-lg font-semibold">
               {lastImport
                 ? new Date(lastImport.createdAt).toLocaleString("en-US", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
                 : "Never"}
             </p>
           </div>

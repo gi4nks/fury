@@ -1,10 +1,14 @@
 import { HTMLElement, Node, parse } from "node-html-parser";
+import { ScrapedMetadata } from "./metadataScraper";
+import { AIAnalysis } from "./aiAnalyzer";
 
 export type ParsedBookmark = {
   url: string;
   title: string;
   description?: string;
   sourceFolder?: string;
+  scraped?: ScrapedMetadata;
+  aiAnalysis?: AIAnalysis;
 };
 
 export function parseBookmarksFromHtml(html: string): ParsedBookmark[] {
@@ -94,12 +98,12 @@ export function parseBookmarksFromHtml(html: string): ParsedBookmark[] {
   }
 
   function getNextElementSibling(current: Node | null): HTMLElement | null {
-    let pointer = current?.nextSibling ?? null;
+    let pointer: Node | null = (current as HTMLElement)?.nextSibling ?? null;
     while (pointer) {
       if (isHTMLElement(pointer)) {
         return pointer;
       }
-      pointer = pointer.nextSibling;
+      pointer = (pointer as HTMLElement).nextSibling;
     }
     return null;
   }

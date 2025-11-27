@@ -2,26 +2,193 @@
 
 Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookmarks, auto-categorizes them locally, and lets you search or browse by category without leaving the browser.
 
-## Getting started
+## Features
 
-1. `npm install`
-2. `npx prisma migrate dev` (or `npm run prisma:migrate`) to create the SQLite schema in `dev.db`.
-3. `npm run dev`
-4. Open [http://localhost:3000](http://localhost:3000) and explore Fury’s dashboard.
+- 📥 **Import Chrome Bookmarks**: Parse and import HTML bookmark exports from Chrome
+- 🤖 **AI-Powered Categorization**: Automatically categorize bookmarks using OpenAI
+- 🔍 **Smart Search**: Search bookmarks by title, URL, description, or metadata
+- 📊 **Analytics Dashboard**: Visualize bookmark categories and metadata coverage
+- 🌐 **Metadata Enrichment**: Scrape Open Graph and meta tags from bookmark URLs
+- 📱 **Responsive Design**: Modern UI built with Tailwind CSS and DaisyUI
+- 🔒 **Privacy-First**: All data stored locally in SQLite database
+- 📤 **Export Functionality**: Export bookmarks in multiple formats (Chrome, Firefox, Safari)
 
-## Import bookmarks
+## Tech Stack
 
-1. In Chrome, open the Bookmark Manager (`chrome://bookmarks/`), click the three-dot menu, and choose **Export bookmarks**.
-2. Save the `.html` file to your machine.
-3. In Fury, open `/import` and upload the exported HTML file.
-4. Fury parses every link, assigns a category, and records the import session.
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, DaisyUI
+- **Database**: SQLite with Prisma ORM
+- **AI**: OpenAI API for categorization and summarization
+- **Build**: Turbopack, ESLint, TypeScript
+- **Deployment**: Ready for Vercel, Netlify, or any Node.js hosting
 
-## Explore bookmarks
+## Project Structure
 
-- Use `/bookmarks` to search for bookmarks by title, URL, or description and filter by category.
-- Visit `/categories` to scan the category grid and click any category to see its bookmarks.
+```
+fury/
+├── src/
+│   ├── app/                 # Next.js App Router pages
+│   │   ├── api/            # API routes
+│   │   ├── bookmarks/      # Bookmarks page
+│   │   ├── categories/     # Categories page
+│   │   ├── import/         # Import page
+│   │   └── metadata/       # Analytics page
+│   ├── components/         # React components
+│   │   ├── BookmarkList.tsx
+│   │   ├── ExportButton.tsx
+│   │   └── AnalyticsCharts.tsx
+│   └── lib/                # Core utilities
+│       ├── aiAnalyzer.ts   # AI categorization
+│       ├── bookmarkParser.ts # HTML parsing
+│       ├── categorization.ts # Category management
+│       ├── db.ts           # Database client
+│       └── metadataScraper.ts # Web scraping
+├── prisma/                 # Database schema and migrations
+├── public/                 # Static assets
+└── scripts/                # Build scripts
+```
 
-## Prisma tooling
+## Getting Started
 
-- `npm run prisma:migrate`: run migrations to align the database schema with `prisma/schema.prisma`.
-- `npm run prisma:generate`: regenerate the Prisma client after schema updates.
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Quick Setup
+
+1. **Clone and install**:
+   ```bash
+   git clone <repository-url>
+   cd fury
+   make setup
+   ```
+
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys
+   ```
+
+3. **Start development**:
+   ```bash
+   make dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000)
+
+### Manual Setup
+
+```bash
+npm install
+npx prisma migrate dev
+npx prisma generate
+npm run dev
+```
+
+## Development
+
+### Available Make Targets
+
+Run `make help` to see all available targets:
+
+- `make setup` - Complete project setup
+- `make dev` - Start development server
+- `make build` - Build for production
+- `make check` - Run linting and type checking
+- `make db-studio` - Open Prisma Studio
+- `make clean` - Clean build artifacts
+- `make env-check` - Check environment variables
+
+### Environment Variables
+
+Create a `.env` file with:
+
+```env
+# Required for AI features
+OPENAI_API_KEY=your_openai_api_key
+
+# Optional: Chrome extension sync
+FURY_CHROME_SYNC_TOKEN=your_sync_token
+```
+
+## Usage
+
+### Import Bookmarks
+
+1. In Chrome: `chrome://bookmarks/` → Export bookmarks
+2. Save the HTML file
+3. In Fury: Visit `/import` → Upload the file
+4. Wait for AI categorization and metadata scraping
+
+### Browse & Search
+
+- **Bookmarks page**: Search and filter bookmarks
+- **Categories page**: Browse by category
+- **Analytics page**: View metadata coverage and trends
+
+### Export Bookmarks
+
+Use the export functionality to download bookmarks in various formats compatible with different browsers.
+
+## API Reference
+
+### Endpoints
+
+- `GET/POST /api/bookmarks` - Bookmark CRUD operations
+- `GET/POST /api/categories` - Category management
+- `POST /api/import` - Import bookmarks from HTML
+- `GET /api/export` - Export bookmarks in various formats
+- `POST /api/init-db` - Initialize database
+
+### Data Models
+
+```typescript
+interface Bookmark {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  categoryId?: string;
+  // Enhanced metadata
+  metaTitle?: string;
+  ogImage?: string;
+  keywords?: string;
+  summary?: string;
+  aiCategory?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+```
+
+## Development Guidelines
+
+See [`.copilot-instructions.md`](.copilot-instructions.md) for detailed coding standards, architecture patterns, and development best practices.
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration:
+
+- **Triggers**: Push and pull requests to `main` and `develop` branches
+- **Node.js versions**: Tests against Node.js 18.x and 20.x
+- **Checks**: ESLint, TypeScript type checking, and production build
+- **Database**: Automated setup and migration testing
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `make check` to ensure code quality
+5. Submit a pull request
+
+The CI pipeline will automatically validate your changes.
+
+## License
+
+MIT License - see LICENSE file for details.

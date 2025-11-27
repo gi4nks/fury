@@ -34,20 +34,23 @@ export default function RootLayout({
               </Link>
             </div>
             <nav className="flex-none flex gap-2">
-              <Link href="/" className="btn btn-ghost">
-                Home
-              </Link>
-              <Link href="/import" className="btn btn-ghost">
-                Import
-              </Link>
-              <Link href="/bookmarks" className="btn btn-ghost">
-                Bookmarks
-              </Link>
-              <Link href="/categories" className="btn btn-ghost">
-                Categories
-              </Link>
-            </nav>
-          </header>
+          <Link href="/" className="btn btn-ghost">
+            Home
+          </Link>
+          <Link href="/import" className="btn btn-ghost">
+            Import
+          </Link>
+          <Link href="/bookmarks" className="btn btn-ghost">
+            Bookmarks
+          </Link>
+          <Link href="/categories" className="btn btn-ghost">
+            Categories
+          </Link>
+          <Link href="/metadata" className="btn btn-ghost">
+            Metadata
+          </Link>
+        </nav>
+      </header>
           <main className="flex-1 w-full">
             <div className="max-w-5xl mx-auto w-full p-4 space-y-6">
               {children}
