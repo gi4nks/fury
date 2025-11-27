@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import MetadataHighlights from "@components/MetadataHighlights";
 import prisma from "@lib/db";
 import { BookmarkList, type BookmarkViewModel } from "@components/BookmarkList";
+import {
+  collectTopKeywords,
+  hasMetadata as bookmarkHasMetadata,
+} from "@lib/metadataUtils";
+import { type BookmarkFilters } from "@lib/filterUtils";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -32,6 +38,14 @@ export default async function CategoryDetail({ params }: CategoryPageProps) {
       title: bookmark.title,
       description: bookmark.description,
       sourceFolder: bookmark.sourceFolder,
+      metaTitle: bookmark.metaTitle,
+      metaDescription: bookmark.metaDescription,
+      ogTitle: bookmark.ogTitle,
+      ogDescription: bookmark.ogDescription,
+      ogImage: bookmark.ogImage,
+      keywords: bookmark.keywords,
+      summary: bookmark.summary,
+      aiCategory: bookmark.aiCategory,
       category: bookmark.category
         ? {
             id: bookmark.category.id,
@@ -40,6 +54,17 @@ export default async function CategoryDetail({ params }: CategoryPageProps) {
         : null,
     })
   );
+
+  const metadataCount = category.bookmarks.filter((bookmark) =>
+    bookmarkHasMetadata(bookmark)
+  ).length;
+  const metadataCoverage = category.bookmarks.length
+    ? Math.round((metadataCount / category.bookmarks.length) * 100)
+    : 0;
+  const metadataHighlights = collectTopKeywords(category.bookmarks, 5);
+  const categoryFilters: BookmarkFilters = {
+    categoryId: category.slug,
+  };
 
   return (
     <div className="space-y-6">
@@ -63,7 +88,35 @@ export default async function CategoryDetail({ params }: CategoryPageProps) {
         </div>
       </div>
 
-      <BookmarkList bookmarks={bookmarkItems} />
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <div className="card rounded border border-base-200 bg-base-100 shadow-sm">
+          <div className="card-body space-y-3">
+            <p className="text-sm text-base-content/70">
+              Metadata coverage inside this category.
+            </p>
+            <div className="stats stats-vertical">
+              <div className="stat">
+                <div className="stat-title">Bookmarks</div>
+                <div className="stat-value">{category.bookmarks.length}</div>
+                <div className="stat-desc">Total</div>
+              </div>
+              <div className="stat">
+                <div className="stat-title">Metadata enriched</div>
+                <div className="stat-value">{metadataCount}</div>
+                <div className="stat-desc">{metadataCoverage}% coverage</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <MetadataHighlights
+          highlights={metadataHighlights}
+          filters={categoryFilters}
+          title="Category metadata insights"
+          description="Stay inside this category while filtering further."
+        />
+      </div>
+
+      <BookmarkList bookmarks={bookmarkItems} filters={categoryFilters} />
     </div>
   );
 }

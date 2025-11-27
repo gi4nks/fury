@@ -21,26 +21,41 @@ const CATEGORY_KEYWORDS: {
   name: string;
   keywords: string[];
 }[] = [
-  { name: "Video", keywords: ["youtube", "vimeo"] },
-  { name: "Tech & Dev", keywords: ["github", "gitlab", "stack overflow", "npm", "react", "next", "next.js"] },
-  { name: "Shopping", keywords: ["amazon", "ebay", "shop", "store"] },
-  { name: "Docs & Reference", keywords: ["docs", "documentation", "api reference"] },
-  { name: "News & Articles", keywords: ["news", "blog", "article", "medium"] },
-  { name: "Social", keywords: ["facebook", "twitter", "linkedin", "instagram"] },
-  { name: "Travel", keywords: ["tripadvisor", "booking", "airbnb", "hotel", "flight"] },
+  { name: "Video", keywords: ["youtube", "vimeo", "dailymotion", "twitch", "netflix", "hulu", "video", "stream"] },
+  { name: "Tech & Dev", keywords: ["github", "gitlab", "stack overflow", "npm", "react", "next", "next.js", "node", "javascript", "typescript", "python", "golang", "rust", "docker", "kubernetes", "aws", "azure", "cloud", "programming", "code", "developer", "api", "sdk", "linux", "terminal", "git"] },
+  { name: "Shopping", keywords: ["amazon", "ebay", "shop", "store", "buy", "price", "deal", "discount", "cart", "checkout", "marketplace"] },
+  { name: "Docs & Reference", keywords: ["docs", "documentation", "api reference", "manual", "guide", "tutorial", "wiki", "howto", "learn", "reference", "cheatsheet"] },
+  { name: "News & Articles", keywords: ["news", "blog", "article", "medium", "post", "journal", "times", "daily", "weekly", "report", "magazine"] },
+  { name: "Social", keywords: ["facebook", "twitter", "linkedin", "instagram", "reddit", "tiktok", "pinterest", "social", "community", "forum", "discord", "slack"] },
+  { name: "Travel", keywords: ["tripadvisor", "booking", "airbnb", "hotel", "flight", "travel", "destination", "tour", "guide", "map", "vacation"] },
 ];
 
 export function guessCategoryNameFromBookmark(bookmark: {
   url: string;
   title: string;
+  description?: string;
+  keywords?: string[];
 }): string {
-  const text = `${bookmark.title} ${bookmark.url}`.toLowerCase();
+  const text = `${bookmark.title} ${bookmark.url} ${bookmark.description || ""} ${bookmark.keywords?.join(" ") || ""}`.toLowerCase();
+  
+  let bestCategory = "Other";
+  let maxScore = 0;
+
   for (const candidate of CATEGORY_KEYWORDS) {
-    if (candidate.keywords.some((keyword) => text.includes(keyword))) {
-      return candidate.name;
+    let score = 0;
+    for (const keyword of candidate.keywords) {
+      if (text.includes(keyword)) {
+        score += 1;
+      }
+    }
+    
+    if (score > maxScore) {
+      maxScore = score;
+      bestCategory = candidate.name;
     }
   }
-  return "Other";
+
+  return bestCategory;
 }
 
 export async function ensureCategoryByName(name: string) {
