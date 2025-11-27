@@ -1,0 +1,69 @@
+name: Main Branch CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  production-checks:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate Prisma client
+      run: npx prisma generate
+      env:
+        DATABASE_URL: file:./prod-check.db
+
+    - name: Run database migrations
+      run: npx prisma migrate dev --name prod-check
+      env:
+        DATABASE_URL: file:./prod-check.db
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run TypeScript type checking
+      run: npx tsc --noEmit
+
+    - name: Build project
+      run: npm run build
+      env:
+        DATABASE_URL: file:./prod-check.db
+
+    - name: Run security audit
+      run: npm audit --audit-level moderate
+
+    - name: Check bundle size
+      run: npx next build --experimental-app-only
+      env:
+        DATABASE_URL: file:./prod-check.db
+
+    - name: Clean up test database
+      run: rm -f prod-check.db
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: production-checks
+    if: always()
+
+    steps:
+    - name: Notify on success
+      if: needs.production-checks.result == 'success'
+      run: echo "✅ Main branch CI passed successfully"
+
+    - name: Notify on failure
+      if: needs.production-checks.result == 'failure'
+      run: echo "❌ Main branch CI failed - check the build logs"
