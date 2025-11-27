@@ -179,6 +179,36 @@ This project uses GitHub Actions for continuous integration:
 - **Checks**: ESLint, TypeScript type checking, and production build
 - **Database**: Automated setup and migration testing
 
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/) and uses Git tags for releases.
+
+### Current Version
+**v0.1.0** - Initial release
+
+### Release Process
+
+1. **Update version**: Use Makefile commands
+   ```bash
+   make version-patch  # 0.1.0 → 0.1.1
+   make version-minor  # 0.1.0 → 0.2.0
+   make version-major  # 0.1.0 → 1.0.0
+   ```
+
+2. **Create release**: Use the automated release command
+   ```bash
+   make release
+   ```
+
+3. **Publish**: Push commits and tags
+   ```bash
+   git push && git push --tags
+   ```
+
+### Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed release notes and changes.
+
 ## Contributing
 
 1. Fork the repository
