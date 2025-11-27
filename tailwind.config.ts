@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+// @ts-expect-error - daisyui doesn't have type definitions
+import daisyui from "daisyui";
 
 interface ExtendedConfig extends Config {
   daisyui?: {
@@ -11,7 +13,7 @@ const config: ExtendedConfig = {
   theme: {
     extend: {},
   },
-  plugins: [require("daisyui")],
+  plugins: [daisyui],
   daisyui: {
     themes: ['corporate'],
   },

@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url = "file:./dev.db"
+  url = env("DATABASE_URL")
 }
 
 model Bookmark {
@@ -17,6 +17,15 @@ model Bookmark {
   title        String
   description  String?
   sourceFolder String?
+  // Enhanced metadata fields
+  metaTitle    String?
+  metaDescription String?
+  ogTitle      String?
+  ogDescription String?
+  ogImage      String?
+  keywords     String?
+  summary      String?
+  aiCategory   String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   categoryId   String?
@@ -39,4 +48,5 @@ model ImportSession {
   totalBookmarks     Int
   successfulBookmarks Int
   failedBookmarks    Int
+  skippedBookmarks   Int      @default(0)
 }
