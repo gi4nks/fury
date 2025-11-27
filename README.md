@@ -179,6 +179,15 @@ This project uses GitHub Actions for continuous integration:
 - **Checks**: ESLint, TypeScript type checking, and production build
 - **Database**: Automated setup and migration testing
 
+### CI Workflows
+
+- **CI** (`.github/workflows/ci.yml`): Runs on all pushes and PRs to `main`/`develop`
+- **Main Branch CI** (`.github/workflows/main-ci.yml`): Additional production checks on pushes to `main`
+  - Security audit with `npm audit`
+  - Bundle size analysis
+  - Production environment validation
+- **Release** (`.github/workflows/release.yml`): Automated releases on version tags
+
 ## Versioning
 
 This project follows [Semantic Versioning](https://semver.org/) and uses Git tags for releases.
