@@ -8,7 +8,7 @@ having misbehavior.
 
 <HighLevelDetails>
 - A summary of what the repository does: Fury is a Next.js web application that imports Chrome bookmark HTML exports, automatically categorizes bookmarks using AI, and provides a modern web interface for browsing and searching bookmarks. It emphasizes privacy by storing all data locally in SQLite.
-- High level repository information, such as the size of the repo, the type of the project, the languages, frameworks, or target runtimes in use: Full-stack web application, TypeScript, Next.js 16 (App Router), React 19, Tailwind CSS 4, DaisyUI, SQLite with Prisma ORM, OpenAI API, Node.js 18+.
+- High level repository information, such as the size of the repo, the type of the project, the languages, frameworks, or target runtimes in use: Full-stack web application, TypeScript, Next.js 16 (App Router), React 19, Tailwind CSS 4, DaisyUI, SQLite with Prisma ORM, OpenAI API, Node.js 20+.
 </HighLevelDetails>
 
 <BuildInstructions>
@@ -25,12 +25,12 @@ having misbehavior.
 
 Bootstrap (One-time Setup):
 Always run these commands in order when setting up the project for the first time:
-1. `npm install` - Install all dependencies (Node.js 18+ required)
+1. `npm install` - Install all dependencies (Node.js 20+ required)
 2. `npm run prisma:generate` - Generate Prisma client
 3. `npm run prisma:migrate` - Run database migrations
 Validated sequence: `npm install && npm run prisma:generate && npm run prisma:migrate`
 Time: ~2-3 seconds for install, ~1 second for Prisma commands
-Preconditions: Node.js 18+, npm installed
+Preconditions: Node.js 20+, npm installed
 Postconditions: All dependencies installed, database schema created, Prisma client generated
 
 Build:
@@ -87,7 +87,7 @@ Common Issues and Workarounds:
 - Prisma issues: Run `npm run prisma:generate` after schema changes
 
 Environment Setup:
-Required: Node.js 18+, npm
+Required: Node.js 20+, npm
 Optional but recommended: `.env` file with `OPENAI_API_KEY` for AI features
 Database: SQLite (file-based, no additional setup required)
 Ports: Development server uses 3000 (configurable via Next.js)

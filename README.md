@@ -52,7 +52,7 @@ fury/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - npm or yarn
 
 ### Quick Setup
@@ -175,7 +175,7 @@ See [`.copilot-instructions.md`](.copilot-instructions.md) for detailed coding s
 This project uses GitHub Actions for continuous integration:
 
 - **Triggers**: Push and pull requests to `main` and `develop` branches
-- **Node.js versions**: Tests against Node.js 18.x and 20.x
+- **Node.js versions**: Tests against Node.js 20.x and 22.x
 - **Checks**: ESLint, TypeScript type checking, and production build
 - **Database**: Automated setup and migration testing
 
