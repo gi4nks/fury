@@ -115,3 +115,38 @@ info: ## Show project information
 	@echo ""
 	@echo "Database: SQLite (prisma/dev.db)"
 	@echo "Development server: http://localhost:3000"
+
+# Versioning
+version: ## Show current version
+	@echo "Current version: $$(node -p "require('./package.json').version")"
+
+version-patch: ## Increment patch version (0.1.0 -> 0.1.1)
+	@echo "Incrementing patch version..."
+	@npm version patch --no-git-tag-version
+	@echo "New version: $$(node -p "require('./package.json').version")"
+
+version-minor: ## Increment minor version (0.1.0 -> 0.2.0)
+	@echo "Incrementing minor version..."
+	@npm version minor --no-git-tag-version
+	@echo "New version: $$(node -p "require('./package.json').version")"
+
+version-major: ## Increment major version (0.1.0 -> 1.0.0)
+	@echo "Incrementing major version..."
+	@npm version major --no-git-tag-version
+	@echo "New version: $$(node -p "require('./package.json').version")"
+
+release: check ## Create a new release (run checks, commit, tag)
+	@echo "Creating release..."
+	@current_version=$$(node -p "require('./package.json').version"); \
+	echo "Current version: $$current_version"; \
+	read -p "New version (current: $$current_version): " new_version; \
+	if [ -n "$$new_version" ]; then \
+		npm version $$new_version --no-git-tag-version; \
+		git add package.json package-lock.json; \
+		git commit -m "Release v$$new_version"; \
+		git tag -a v$$new_version -m "Release v$$new_version"; \
+		echo "✅ Release v$$new_version created!"; \
+		echo "Run 'git push && git push --tags' to publish"; \
+	else \
+		echo "No version specified, aborting."; \
+	fi
