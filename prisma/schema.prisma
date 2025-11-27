@@ -26,6 +26,7 @@ model Bookmark {
   keywords     String?
   summary      String?
   aiCategory   String?
+  aiConfidence Float?    // AI categorization confidence score (0-100)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   categoryId   String?
@@ -37,6 +38,9 @@ model Category {
   name      String
   slug      String     @unique
   description String?
+  parentId  String?    // For hierarchical categories
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
   createdAt DateTime   @default(now())
   bookmarks Bookmark[]
 }

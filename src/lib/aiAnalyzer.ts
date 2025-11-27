@@ -1,10 +1,11 @@
 import { ScrapedMetadata } from './metadataScraper';
-import { guessCategoryNameFromBookmark } from './categorization';
+import { guessCategoryNameFromBookmark, CATEGORY_KEYWORDS } from './categorization';
 
 export interface AIAnalysis {
   keywords: string[];
   summary: string;
   suggestedCategory: string;
+  confidence?: number;
 }
 
 const STOP_WORDS = new Set([
@@ -35,13 +36,16 @@ export async function analyzeBookmark(
   scraped: ScrapedMetadata | null
 ): Promise<AIAnalysis | null> {
   try {
-    // 1. Generate Summary
+    // 1. Generate Summary with better content extraction
     let summary = scraped?.ogDescription || scraped?.metaDescription || description || "";
     if (!summary && scraped?.bodyText) {
-      summary = scraped.bodyText.substring(0, 200).trim() + "...";
+      // Extract meaningful content from body text
+      const bodyText = scraped.bodyText;
+      const sentences = bodyText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+      summary = sentences.slice(0, 2).join('. ').trim() + (sentences.length > 2 ? '...' : '');
     }
 
-    // 2. Extract Keywords
+    // 2. Enhanced Keyword Extraction
     const textForKeywords = [
       title,
       description,
@@ -49,12 +53,12 @@ export async function analyzeBookmark(
       scraped?.metaDescription,
       scraped?.ogTitle,
       scraped?.ogDescription,
-      scraped?.bodyText
+      scraped?.bodyText?.substring(0, 1000) // Limit body text for performance
     ].filter(Boolean).join(' ');
-    
-    const keywords = extractKeywords(textForKeywords);
 
-    // 3. Suggest Category
+    const keywords = extractKeywords(textForKeywords, 10);
+
+    // 3. Intelligent Category Suggestion with URL analysis
     const suggestedCategory = guessCategoryNameFromBookmark({
       url,
       title,
@@ -62,13 +66,86 @@ export async function analyzeBookmark(
       keywords
     });
 
+    // 4. Add confidence scoring for category suggestions
+    const categoryConfidence = calculateCategoryConfidence(url, title, description, keywords, suggestedCategory);
+
     return {
       keywords,
       summary,
       suggestedCategory,
+      confidence: categoryConfidence
     };
   } catch (error) {
     console.warn(`Local analysis failed for ${url}:`, (error as Error).message);
+    return null;
+  }
+}
+
+// Calculate confidence score for category suggestion
+function calculateCategoryConfidence(
+  url: string,
+  title: string,
+  description: string | undefined,
+  keywords: string[],
+  category: string
+): number {
+  const text = `${title} ${url} ${description || ""} ${keywords.join(" ")}`.toLowerCase();
+  let confidence = 0;
+
+  // URL domain matching gives high confidence
+  const domain = extractDomain(url);
+  const highConfidenceDomains: Record<string, string[]> = {
+    'github.com': ['Web Development', 'AI & Machine Learning'],
+    'youtube.com': ['Video Streaming'],
+    'spotify.com': ['Music'],
+    'netflix.com': ['Video Streaming'],
+    'coursera.org': ['Education'],
+    'udemy.com': ['Education'],
+    'figma.com': ['UI/UX Design'],
+    'dribbble.com': ['UI/UX Design', 'Graphic Design'],
+    'notion.so': ['Productivity'],
+    'amazon.com': ['Shopping'],
+    'reddit.com': ['Social'],
+    'twitter.com': ['Social']
+  };
+
+  if (domain && highConfidenceDomains[domain]?.includes(category)) {
+    confidence += 80;
+  }
+
+  // Keyword matches add confidence
+  const categoryKeywords = getCategoryKeywords(category);
+  let keywordMatches = 0;
+  for (const keyword of categoryKeywords) {
+    if (text.includes(keyword.toLowerCase())) {
+      keywordMatches++;
+    }
+  }
+
+  if (keywordMatches > 0) {
+    confidence += Math.min(keywordMatches * 15, 60); // Cap at 60 for keywords
+  }
+
+  // Title relevance adds confidence
+  if (title.toLowerCase().includes(category.toLowerCase().split(' ')[0])) {
+    confidence += 20;
+  }
+
+  return Math.min(confidence, 100);
+}
+
+// Helper function to get keywords for a category
+function getCategoryKeywords(categoryName: string): string[] {
+  const category = CATEGORY_KEYWORDS.find(c => c.name === categoryName);
+  return category?.keywords || [];
+}
+
+// Helper function to extract domain
+function extractDomain(url: string): string | null {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return urlObj.hostname;
+  } catch {
     return null;
   }
 }

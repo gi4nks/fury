@@ -110,6 +110,7 @@ export async function POST(request: Request) {
               keywords: bookmark.aiAnalysis?.keywords?.join(', '),
               summary: bookmark.aiAnalysis?.summary,
               aiCategory: bookmark.aiAnalysis?.suggestedCategory,
+              aiConfidence: bookmark.aiAnalysis?.confidence,
             },
             create: {
               url: bookmark.url,
@@ -126,6 +127,7 @@ export async function POST(request: Request) {
               keywords: bookmark.aiAnalysis?.keywords?.join(', '),
               summary: bookmark.aiAnalysis?.summary,
               aiCategory: bookmark.aiAnalysis?.suggestedCategory,
+              aiConfidence: bookmark.aiAnalysis?.confidence,
             },
           });
           successful += 1;
