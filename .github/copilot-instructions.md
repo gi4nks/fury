@@ -7,8 +7,8 @@ having misbehavior.
 </Goals>
 
 <HighLevelDetails>
-- A summary of what the repository does: Fury is a Next.js web application that imports Chrome bookmark HTML exports, automatically categorizes bookmarks using AI, and provides a modern web interface for browsing and searching bookmarks. It emphasizes privacy by storing all data locally in SQLite.
-- High level repository information, such as the size of the repo, the type of the project, the languages, frameworks, or target runtimes in use: Full-stack web application, TypeScript, Next.js 16 (App Router), React 19, Tailwind CSS 4, DaisyUI, SQLite with Prisma ORM, OpenAI API, Node.js 20+.
+- A summary of what the repository does: Fury is a Next.js web application that imports Chrome bookmark HTML exports, automatically categorizes bookmarks using AI (Gemini 2.5 Flash primary, OpenAI fallback), and provides a modern web interface for browsing and searching bookmarks. Features AI-powered custom category discovery that analyzes your bookmarks and suggests personalized hierarchical categories. Emphasizes privacy by storing all data locally in SQLite.
+- High level repository information, such as the size of the repo, the type of the project, the languages, frameworks, or target runtimes in use: Full-stack web application, TypeScript, Next.js 16 (App Router), React 19, Tailwind CSS 4, DaisyUI, SQLite with Prisma ORM, Google Gemini AI (gemini-2.5-flash), OpenAI API (fallback), Node.js 20+.
 </HighLevelDetails>
 
 <BuildInstructions>
@@ -48,7 +48,7 @@ Run (Development):
 Time: ~0.5 seconds to start
 Preconditions: Dependencies installed
 Postconditions: Server running on http://localhost:3000
-Environment variables: Optional `.env` file with `OPENAI_API_KEY`
+Environment variables: Optional `.env` file with `GEMINI_API_KEY` (primary AI) and/or `OPENAI_API_KEY` (fallback)
 
 Run (Production):
 `npm run start` - Start production server
@@ -88,19 +88,31 @@ Common Issues and Workarounds:
 
 Environment Setup:
 Required: Node.js 20+, npm
-Optional but recommended: `.env` file with `OPENAI_API_KEY` for AI features
+Optional but recommended: `.env` file with `GEMINI_API_KEY` for custom category discovery and AI features
+Optional fallback: `OPENAI_API_KEY` as fallback AI provider
 Database: SQLite (file-based, no additional setup required)
 Ports: Development server uses 3000 (configurable via Next.js)
 
 Categorization System:
 - **Hierarchical Categories**: Supports parent/child category relationships (e.g., "Web Development" under "Development")
-- **23 Main Categories**: Technology, Development, Design, Business, Education, Entertainment, News & Media, Shopping, Social, Health & Fitness, Travel, Finance, Science, Sports, Food & Cooking, Home & Garden, Automotive, and subcategories
+- **23 Default Categories**: Technology, Development, Design, Business, Education, Entertainment, News & Media, Shopping, Social, Health & Fitness, Travel, Finance, Science, Sports, Food & Cooking, Home & Garden, Automotive, and subcategories
+- **Custom Category Discovery**: AI-powered analysis using Gemini 2.5 Flash to suggest personalized category hierarchies
+- **Category Constraints**: 6-10 root categories maximum, 4 levels deep, broad themes at top level
+- **AI Batch Assignment**: Fast categorization of bookmarks in batches of 50 using compact JSON format
 - **Intelligent Matching**: Uses URL patterns, keyword analysis, content indicators, and weighted scoring
 - **AI Confidence Scoring**: Provides confidence levels (0-100) for categorization suggestions
 - **Domain Recognition**: Special handling for well-known platforms (GitHub, YouTube, Spotify, etc.)
 - **Exclusion Patterns**: Prevents false positives by excluding ambiguous keywords when context doesn't match
 - **Word Boundary Matching**: Uses regex word boundaries for precise keyword detection
 - **Semantic Keyword Boost**: Prioritizes semantically extracted keywords over raw text matches
+
+Gemini AI Integration:
+- **Model**: gemini-2.5-flash for fast, cost-effective analysis
+- **Category Discovery**: Analyzes bookmark titles, URLs, domains, and folder structure
+- **Batch Assignment**: Compact [[index, categoryIndex]] format to avoid token limits
+- **Truncation Recovery**: Automatic JSON repair for truncated responses
+- **Progress Callbacks**: Real-time progress updates during batch processing
+- **Fallback**: Local clustering algorithm when Gemini API unavailable
 
 Text Processing System:
 - **Stop Word Removal**: 714 stop words covering English articles, pronouns, prepositions, web-specific terms, and UI elements
@@ -117,8 +129,12 @@ URL Validation:
 Import System:
 - **Duplicate Prevention**: URL normalization and deduplication within import files
 - **Streaming Progress**: Server-Sent Events (SSE) for real-time import progress
-- **Progress Stages**: Parsing → Validating → Processing → Storing → Complete
+- **Progress Stages**: Parsing → Categories → Assigning → Importing → Complete
 - **Live Counters**: Total, processed, new, updated, skipped (duplicates), failed
+- **Category Modes**: Default (fast, 23 categories) or Custom (AI discovery)
+- **AI Batch Assignment**: Bookmarks assigned to categories in batches via Gemini AI
+- **Fast Mode**: Custom categories skip URL validation for faster import
+- **Keyword Fallback**: Local keyword matching when AI assignment fails
 </BuildInstructions>
 
 <ProjectLayout>
@@ -151,14 +167,27 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 
 Key Source Files:
 - src/app/page.tsx - Home dashboard with statistics
-- src/app/import/page.tsx - Import page with real-time progress tracking
+- src/app/import/page.tsx - Import page with category mode selection and real-time progress
 - src/lib/db.ts - Prisma client instance
 - src/lib/categorization.ts - Category matching with exclusion patterns and word boundaries
-- src/lib/textProcessor.ts - Semantic text processing, stop words, bigram extraction
+- src/lib/categoryDiscovery.ts - AI-powered category discovery with Gemini/clustering fallback
+- src/lib/geminiClient.ts - Gemini AI API wrapper (analyzeBookmarks, batchAssign)
+- src/lib/hierarchyBuilder.ts - Category hierarchy validation and manipulation
+- src/lib/keywordGenerator.ts - TF-IDF keyword extraction for categories
+- src/lib/textProcessor.ts - Semantic text processing, 714 stop words, bigram extraction
 - src/lib/metadataScraper.ts - URL validation with HEAD/GET fallback
 - src/lib/aiAnalyzer.ts - AI-powered categorization using text processor
-- src/app/api/import/stream/route.ts - SSE streaming import endpoint
-- prisma/schema.prisma - Database schema with Bookmark and Category models
+- src/app/api/import/stream/route.ts - SSE streaming import with custom category support
+- src/app/api/import/analyze/route.ts - Bookmark analysis and category discovery endpoint
+- src/app/api/categories/bulk/route.ts - Bulk category operations
+- src/app/api/categories/merge/route.ts - Category merging
+- prisma/schema.prisma - Database schema with Bookmark, Category, CategoryTemplate models
+
+Key Components:
+- src/components/CategoryModeSelector.tsx - Default vs Custom category mode selection
+- src/components/DiscoveryProgress.tsx - AI discovery progress indicator
+- src/components/HierarchyEditor.tsx - Interactive category tree editor with expand/collapse
+- src/components/KeywordEditor.tsx - Category keyword management with AI suggestions
 
 Major Directories:
 - src/app/ - Next.js App Router pages and API routes
