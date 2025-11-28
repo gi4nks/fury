@@ -34,15 +34,16 @@ model Bookmark {
 }
 
 model Category {
-  id        String     @id @default(cuid())
-  name      String
-  slug      String     @unique
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
   description String?
-  parentId  String?    // For hierarchical categories
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryHierarchy")
-  createdAt DateTime   @default(now())
-  bookmarks Bookmark[]
+  keywords    String?    // JSON array of custom keywords for matching
+  parentId    String?    // For hierarchical categories
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  createdAt   DateTime   @default(now())
+  bookmarks   Bookmark[]
 }
 
 model ImportSession {
@@ -53,4 +54,34 @@ model ImportSession {
   successfulBookmarks Int
   failedBookmarks    Int
   skippedBookmarks   Int      @default(0)
+}
+
+// Custom category templates for user-defined hierarchies
+model CategoryTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  keywords    String   // JSON array of keywords
+  urlPatterns String?  // JSON array of URL patterns
+  parentId    String?
+  parent      CategoryTemplate?  @relation("TemplateHierarchy", fields: [parentId], references: [id])
+  children    CategoryTemplate[] @relation("TemplateHierarchy")
+  level       Int      @default(0)
+  isCustom    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  templateSetId String?
+  templateSet   CategoryTemplateSet? @relation(fields: [templateSetId], references: [id], onDelete: Cascade)
+}
+
+// Group of category templates (saveable configurations)
+model CategoryTemplateSet {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  categories  CategoryTemplate[]
 }

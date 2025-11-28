@@ -8,7 +8,7 @@ type CategoryDefinition = {
 };
 
 const DEFAULT_CATEGORIES: CategoryDefinition[] = [
-  // Main Categories (8 core categories)
+  // Main Categories (9 core categories)
   { name: "Technology & Development", slug: "technology-development", description: "Programming, software development, and technical tools" },
   { name: "Design & Creative", slug: "design-creative", description: "UI/UX design, graphics, and creative tools" },
   { name: "Business & Productivity", slug: "business-productivity", description: "Work tools, project management, and productivity apps" },
@@ -17,6 +17,7 @@ const DEFAULT_CATEGORIES: CategoryDefinition[] = [
   { name: "News & Information", slug: "news-information", description: "Current events, blogs, and informational content" },
   { name: "Shopping & Commerce", slug: "shopping-commerce", description: "E-commerce, deals, and online shopping" },
   { name: "Personal & Lifestyle", slug: "personal-lifestyle", description: "Health, travel, hobbies, and personal interests" },
+  { name: "Healthcare & Pharma", slug: "healthcare-pharma", description: "Pharmaceutical companies, healthcare providers, and medical industry" },
 
   // Technology & Development Subcategories
   { name: "Web Development", slug: "web-development", description: "Frontend, backend, and full-stack development", parent: "Technology & Development" },
@@ -67,6 +68,12 @@ const DEFAULT_CATEGORIES: CategoryDefinition[] = [
   { name: "Food & Cooking", slug: "food-cooking", description: "Recipes, cooking, and culinary resources", parent: "Personal & Lifestyle" },
   { name: "Home & Garden", slug: "home-garden", description: "Home improvement, gardening, and lifestyle", parent: "Personal & Lifestyle" },
   { name: "Personal Finance", slug: "personal-finance", description: "Budgeting, investing, and financial planning", parent: "Personal & Lifestyle" },
+
+  // Healthcare & Pharma Subcategories
+  { name: "Pharmaceutical Companies", slug: "pharmaceutical-companies", description: "Drug manufacturers and biotech companies", parent: "Healthcare & Pharma" },
+  { name: "Healthcare Providers", slug: "healthcare-providers", description: "Hospitals, clinics, and medical services", parent: "Healthcare & Pharma" },
+  { name: "Medical Devices", slug: "medical-devices", description: "Medical equipment and device manufacturers", parent: "Healthcare & Pharma" },
+  { name: "Biotech & Research", slug: "biotech-research", description: "Biotechnology and medical research companies", parent: "Healthcare & Pharma" },
 ];
 
 export const CATEGORY_KEYWORDS: {
@@ -74,262 +81,296 @@ export const CATEGORY_KEYWORDS: {
   keywords: string[];
   urlPatterns?: RegExp[];
   contentIndicators?: string[];
+  exclusionPatterns?: string[];  // Words that should NOT trigger this category
+  requireWordBoundary?: boolean; // If true, keywords must match as whole words
   weight: number;
 }[] = [
   // Technology & Development
   {
     name: "Web Development",
-    keywords: ["react", "vue", "angular", "next.js", "nuxt", "svelte", "javascript", "typescript", "html", "css", "sass", "webpack", "vite", "babel", "eslint", "prettier", "frontend", "backend", "fullstack", "api", "rest", "graphql", "web", "browser", "dom"],
-    urlPatterns: [/\.js$/, /\.ts$/, /github\.com/, /npmjs\.com/, /vercel\.com/, /netlify\.com/],
-    contentIndicators: ["tutorial", "documentation", "framework", "library", "component"],
+    keywords: ["react", "vue", "angular", "next.js", "nuxt", "svelte", "javascript", "typescript", "html5", "css3", "sass", "webpack", "vite", "babel", "eslint", "prettier", "frontend", "backend", "fullstack", "rest api", "graphql", "web developer", "web development", "nodejs", "node.js", "express", "npm", "yarn"],
+    urlPatterns: [/github\.com/, /npmjs\.com/, /vercel\.com/, /netlify\.com/, /stackoverflow\.com/, /developer\.mozilla\.org/],
+    contentIndicators: ["documentation", "framework", "library", "component", "developer"],
+    exclusionPatterns: ["web browser", "browse the web"],
     weight: 3
   },
   {
     name: "Mobile Development",
-    keywords: ["ios", "android", "mobile", "app", "swift", "kotlin", "react native", "flutter", "xamarin", "cordova", "phonegap", "pwa", "responsive", "smartphone", "tablet"],
-    urlPatterns: [/play\.google\.com/, /apps\.apple\.com/, /flutter\.dev/, /reactnative\.dev/],
-    contentIndicators: ["mobile app", "app store", "smartphone", "tablet"],
+    keywords: ["ios development", "android development", "mobile app", "swift programming", "kotlin programming", "react native", "flutter", "xamarin", "cordova", "phonegap", "progressive web app", "pwa", "ios sdk", "android sdk", "xcode", "android studio"],
+    urlPatterns: [/play\.google\.com/, /apps\.apple\.com/, /flutter\.dev/, /reactnative\.dev/, /developer\.apple\.com/, /developer\.android\.com/],
+    contentIndicators: ["mobile app", "app store", "play store", "ios app", "android app"],
     weight: 3
   },
   {
     name: "AI & Machine Learning",
-    keywords: ["ai", "artificial intelligence", "machine learning", "ml", "deep learning", "neural network", "gpt", "openai", "tensorflow", "pytorch", "huggingface", "llm", "chatbot", "nlp", "computer vision", "data science"],
-    urlPatterns: [/openai\.com/, /huggingface\.co/, /kaggle\.com/, /paperswithcode\.com/],
-    contentIndicators: ["model", "training", "inference", "dataset", "algorithm"],
+    keywords: ["artificial intelligence", "machine learning", "deep learning", "neural network", "gpt", "openai", "tensorflow", "pytorch", "huggingface", "llm", "large language model", "chatbot", "nlp", "natural language processing", "computer vision", "data science", "scikit-learn", "keras"],
+    urlPatterns: [/openai\.com/, /huggingface\.co/, /kaggle\.com/, /paperswithcode\.com/, /anthropic\.com/, /cohere\.com/],
+    contentIndicators: ["machine learning", "training model", "inference", "dataset", "neural"],
     weight: 4
   },
   {
     name: "Cloud & DevOps",
-    keywords: ["aws", "azure", "gcp", "google cloud", "cloud", "serverless", "lambda", "ec2", "s3", "docker", "kubernetes", "k8s", "terraform", "infrastructure", "devops", "ci/cd", "jenkins", "github actions"],
-    urlPatterns: [/aws\.amazon\.com/, /azure\.microsoft\.com/, /cloud\.google\.com/, /docker\.com/, /kubernetes\.io/],
-    contentIndicators: ["deployment", "scaling", "infrastructure", "container", "orchestration"],
+    keywords: ["aws", "azure", "gcp", "google cloud platform", "cloud computing", "serverless", "lambda", "ec2", "s3", "docker", "kubernetes", "k8s", "terraform", "infrastructure as code", "devops", "ci/cd", "jenkins", "github actions", "cloudformation", "ansible", "puppet", "chef"],
+    urlPatterns: [/aws\.amazon\.com/, /azure\.microsoft\.com/, /cloud\.google\.com/, /docker\.com/, /kubernetes\.io/, /terraform\.io/, /hashicorp\.com/],
+    contentIndicators: ["deployment", "scaling", "container", "orchestration", "infrastructure"],
     weight: 3
   },
   {
     name: "Programming Tools",
-    keywords: ["vscode", "vim", "emacs", "intellij", "pycharm", "webstorm", "sublime", "atom", "ide", "editor", "git", "github", "gitlab", "bitbucket", "terminal", "command line", "cli"],
-    urlPatterns: [/github\.com/, /gitlab\.com/, /code\.visualstudio\.com/],
-    contentIndicators: ["editor", "ide", "tool", "utility", "development"],
+    keywords: ["vscode", "visual studio code", "vim editor", "emacs", "intellij idea", "pycharm", "webstorm", "sublime text", "atom editor", "ide", "code editor", "version control", "source control", "debugging", "linter", "formatter"],
+    urlPatterns: [/code\.visualstudio\.com/, /jetbrains\.com/, /sublimetext\.com/],
+    contentIndicators: ["code editor", "ide", "debugging", "development environment"],
     weight: 2
   },
 
   // Design & Creative
   {
     name: "UI/UX Design",
-    keywords: ["ui", "ux", "user interface", "user experience", "design system", "figma", "sketch", "adobe xd", "prototyping", "wireframe", "mockup", "usability", "accessibility", "design thinking"],
-    urlPatterns: [/figma\.com/, /dribbble\.com/, /behance\.net/, /adobe\.com/],
-    contentIndicators: ["design", "interface", "user experience", "prototype", "wireframe"],
+    keywords: ["ui design", "ux design", "user interface", "user experience", "design system", "figma", "sketch app", "adobe xd", "prototyping", "wireframe", "mockup", "usability testing", "accessibility", "design thinking", "interaction design"],
+    urlPatterns: [/figma\.com/, /dribbble\.com/, /behance\.net/, /sketch\.com/, /invisionapp\.com/],
+    contentIndicators: ["ui design", "ux design", "user interface", "prototype", "wireframe"],
     weight: 3
   },
   {
     name: "Graphic Design",
-    keywords: ["photoshop", "illustrator", "indesign", "graphic design", "branding", "logo", "typography", "color theory", "layout", "print design", "vector", "raster"],
-    urlPatterns: [/adobe\.com/, /canva\.com/, /dribbble\.com/],
-    contentIndicators: ["design", "graphic", "visual", "brand", "logo"],
+    keywords: ["photoshop", "illustrator", "indesign", "graphic design", "branding design", "logo design", "typography", "color theory", "print design", "vector graphics", "raster graphics", "visual design"],
+    urlPatterns: [/adobe\.com\/products/, /canva\.com/, /99designs\.com/],
+    contentIndicators: ["graphic design", "visual design", "branding", "logo design"],
     weight: 2
   },
   {
     name: "Photography",
-    keywords: ["photography", "camera", "lens", "lightroom", "photoshop", "dslr", "mirrorless", "composition", "editing", "retouching", "portfolio"],
-    urlPatterns: [/unsplash\.com/, /pexels\.com/, /flickr\.com/],
-    contentIndicators: ["photo", "camera", "image", "gallery", "portfolio"],
+    keywords: ["photography", "camera gear", "camera lens", "lightroom", "dslr camera", "mirrorless camera", "photo editing", "retouching", "photo portfolio", "aperture", "shutter speed", "iso", "raw photos"],
+    urlPatterns: [/unsplash\.com/, /pexels\.com/, /flickr\.com/, /500px\.com/, /smugmug\.com/],
+    contentIndicators: ["photography", "photographer", "camera", "photo editing"],
     weight: 2
   },
   {
     name: "Video & Animation",
-    keywords: ["video", "animation", "motion graphics", "after effects", "premiere", "final cut", "davinci resolve", "blender", "maya", "cinema 4d", "3d", "rendering"],
-    urlPatterns: [/adobe\.com/, /blender\.org/, /autodesk\.com/],
-    contentIndicators: ["video", "animation", "motion", "3d", "render"],
+    keywords: ["video editing", "animation", "motion graphics", "after effects", "premiere pro", "final cut pro", "davinci resolve", "blender 3d", "maya 3d", "cinema 4d", "3d modeling", "3d rendering", "vfx", "visual effects"],
+    urlPatterns: [/blender\.org/, /autodesk\.com/, /maxon\.net/],
+    contentIndicators: ["video editing", "animation", "motion graphics", "3d modeling", "rendering"],
+    exclusionPatterns: ["video streaming", "watch video", "youtube"],
     weight: 2
   },
 
   // Business & Productivity
   {
     name: "Project Management",
-    keywords: ["project management", "agile", "scrum", "kanban", "jira", "confluence", "teamwork", "collaboration", "sprint", "backlog", "trello", "asana", "monday.com"],
-    urlPatterns: [/atlassian\.com/, /jira\.com/, /basecamp\.com/, /trello\.com/, /asana\.com/],
-    contentIndicators: ["project", "team", "collaboration", "management", "workflow"],
+    keywords: ["project management", "agile methodology", "scrum master", "kanban board", "jira", "confluence", "sprint planning", "backlog", "trello", "asana", "monday.com", "gantt chart", "project timeline", "milestone"],
+    urlPatterns: [/atlassian\.com/, /jira\.com/, /basecamp\.com/, /trello\.com/, /asana\.com/, /monday\.com/, /clickup\.com/],
+    contentIndicators: ["project management", "sprint", "backlog", "agile", "scrum"],
     weight: 2
   },
   {
     name: "Productivity Tools",
-    keywords: ["todo", "task", "productivity", "organization", "calendar", "schedule", "time management", "notion", "evernote", "workflow", "automation", "efficiency"],
-    urlPatterns: [/notion\.so/, /evernote\.com/, /todoist\.com/],
-    contentIndicators: ["task", "productivity", "workflow", "organization", "efficiency"],
+    keywords: ["todo app", "task manager", "productivity app", "note taking", "calendar app", "time tracking", "notion", "evernote", "obsidian", "roam research", "automation tool", "zapier", "ifttt"],
+    urlPatterns: [/notion\.so/, /evernote\.com/, /todoist\.com/, /obsidian\.md/, /zapier\.com/, /airtable\.com/],
+    contentIndicators: ["productivity app", "note taking", "task management", "time tracking"],
     weight: 2
   },
   {
     name: "Marketing & Sales",
-    keywords: ["marketing", "seo", "sem", "social media marketing", "content marketing", "email marketing", "sales", "crm", "lead generation", "analytics", "advertising"],
-    urlPatterns: [/hubspot\.com/, /mailchimp\.com/, /google\.com\/analytics/],
-    contentIndicators: ["marketing", "sales", "campaign", "conversion", "analytics"],
+    keywords: ["digital marketing", "seo optimization", "sem campaign", "social media marketing", "content marketing", "email marketing", "crm software", "lead generation", "marketing automation", "ppc advertising", "google ads", "facebook ads"],
+    urlPatterns: [/hubspot\.com/, /mailchimp\.com/, /marketo\.com/, /salesforce\.com/, /semrush\.com/, /ahrefs\.com/, /moz\.com/],
+    contentIndicators: ["digital marketing", "seo", "marketing campaign", "lead generation", "crm"],
     weight: 2
   },
   {
     name: "Communication",
-    keywords: ["slack", "microsoft teams", "zoom", "discord", "whatsapp", "telegram", "communication", "chat", "video call", "collaboration", "remote work"],
-    urlPatterns: [/slack\.com/, /teams\.microsoft\.com/, /zoom\.us/, /discord\.com/],
-    contentIndicators: ["communication", "chat", "collaboration", "remote", "meeting"],
+    keywords: ["slack", "microsoft teams", "zoom meeting", "discord server", "team chat", "video conferencing", "webex", "google meet", "team collaboration"],
+    urlPatterns: [/slack\.com/, /teams\.microsoft\.com/, /zoom\.us/, /discord\.com/, /webex\.com/, /meet\.google\.com/],
+    contentIndicators: ["team chat", "video call", "video conferencing", "team collaboration"],
     weight: 2
   },
 
   // Education & Learning
   {
     name: "Online Courses",
-    keywords: ["course", "udemy", "coursera", "edx", "udacity", "masterclass", "skillshare", "lynda", "linkedin learning", "certification", "online learning"],
-    urlPatterns: [/coursera\.org/, /udemy\.com/, /edx\.org/, /udacity\.com/],
-    contentIndicators: ["course", "learn", "certification", "education", "training"],
+    keywords: ["online course", "udemy", "coursera", "edx", "udacity", "masterclass", "skillshare", "linkedin learning", "certification program", "mooc", "online class", "e-learning"],
+    urlPatterns: [/coursera\.org/, /udemy\.com/, /edx\.org/, /udacity\.com/, /skillshare\.com/, /masterclass\.com/, /pluralsight\.com/],
+    contentIndicators: ["online course", "certification", "e-learning", "mooc"],
     weight: 3
   },
   {
     name: "Programming Tutorials",
-    keywords: ["tutorial", "learn programming", "coding tutorial", "javascript tutorial", "python tutorial", "web development tutorial", "free code camp", "codecademy"],
-    urlPatterns: [/freecodecamp\.org/, /codecademy\.com/, /tutorialspoint\.com/],
-    contentIndicators: ["tutorial", "learn", "guide", "how to", "programming"],
+    keywords: ["coding tutorial", "programming tutorial", "learn to code", "javascript tutorial", "python tutorial", "web development tutorial", "freecodecamp", "codecademy", "coding bootcamp", "learn programming"],
+    urlPatterns: [/freecodecamp\.org/, /codecademy\.com/, /tutorialspoint\.com/, /w3schools\.com/, /learnpython\.org/],
+    contentIndicators: ["coding tutorial", "programming tutorial", "learn to code", "code example"],
     weight: 3
   },
   {
     name: "Academic Research",
-    keywords: ["research", "academic", "paper", "journal", "scholar", "google scholar", "pubmed", "arxiv", "thesis", "dissertation"],
-    urlPatterns: [/scholar\.google\.com/, /pubmed\.ncbi\.nlm\.nih\.gov/, /arxiv\.org/],
-    contentIndicators: ["research", "academic", "paper", "journal", "study"],
+    keywords: ["academic research", "research paper", "scientific journal", "google scholar", "pubmed", "arxiv", "thesis", "dissertation", "peer review", "citation", "doi"],
+    urlPatterns: [/scholar\.google\.com/, /pubmed\.ncbi\.nlm\.nih\.gov/, /arxiv\.org/, /researchgate\.net/, /jstor\.org/, /sciencedirect\.com/],
+    contentIndicators: ["academic paper", "research paper", "scientific journal", "peer review"],
     weight: 2
   },
   {
     name: "Skill Development",
-    keywords: ["skill", "professional development", "career", "job skills", "training", "workshop", "webinar", "conference", "certification"],
-    urlPatterns: [/linkedin\.com\/learning/, /pluralsight\.com/],
-    contentIndicators: ["skill", "development", "career", "professional", "training"],
+    keywords: ["professional development", "career development", "job skills", "upskilling", "reskilling", "professional certification", "soft skills", "leadership training"],
+    urlPatterns: [/linkedin\.com\/learning/],
+    contentIndicators: ["professional development", "career growth", "upskilling", "soft skills"],
     weight: 2
   },
 
   // Entertainment & Media
   {
     name: "Video Streaming",
-    keywords: ["youtube", "vimeo", "twitch", "netflix", "hulu", "disney+", "amazon prime", "hbo", "streaming", "video", "watch", "stream"],
-    urlPatterns: [/youtube\.com/, /vimeo\.com/, /twitch\.tv/, /netflix\.com/, /hulu\.com/],
-    contentIndicators: ["video", "streaming", "watch", "entertainment"],
+    keywords: ["youtube", "vimeo", "twitch", "netflix", "hulu", "disney plus", "amazon prime video", "hbo max", "streaming service", "watch movies", "watch shows", "live stream"],
+    urlPatterns: [/youtube\.com/, /vimeo\.com/, /twitch\.tv/, /netflix\.com/, /hulu\.com/, /disneyplus\.com/, /hbomax\.com/, /primevideo\.com/],
+    contentIndicators: ["streaming service", "watch online", "live stream", "tv shows"],
     weight: 4
   },
   {
     name: "Music & Audio",
-    keywords: ["spotify", "apple music", "youtube music", "soundcloud", "bandcamp", "music", "song", "album", "artist", "playlist", "audio", "podcast"],
-    urlPatterns: [/spotify\.com/, /soundcloud\.com/, /bandcamp\.com/, /music\.apple\.com/],
-    contentIndicators: ["music", "song", "album", "artist", "audio"],
+    keywords: ["spotify", "apple music", "youtube music", "soundcloud", "bandcamp", "music streaming", "playlist", "podcast app", "audiobook", "tidal", "deezer", "pandora"],
+    urlPatterns: [/spotify\.com/, /soundcloud\.com/, /bandcamp\.com/, /music\.apple\.com/, /tidal\.com/, /deezer\.com/, /podcasts\.apple\.com/],
+    contentIndicators: ["music streaming", "playlist", "podcast", "audiobook"],
     weight: 3
   },
   {
     name: "Gaming",
-    keywords: ["game", "gaming", "steam", "epic games", "ubisoft", "ea", "nintendo", "playstation", "xbox", "pc gaming", "console", "esports", "twitch"],
-    urlPatterns: [/steam\.com/, /epicgames\.com/, /twitch\.tv/, /ign\.com/],
-    contentIndicators: ["game", "gaming", "player", "level", "achievement"],
+    keywords: ["video game", "pc gaming", "steam", "epic games", "ubisoft", "ea games", "nintendo", "playstation", "xbox", "console gaming", "esports", "game review", "gaming news"],
+    urlPatterns: [/steampowered\.com/, /store\.steampowered\.com/, /epicgames\.com/, /ign\.com/, /gamespot\.com/, /kotaku\.com/, /polygon\.com/],
+    contentIndicators: ["video game", "pc gaming", "console gaming", "esports", "game review"],
     weight: 3
   },
   {
     name: "Content Creation",
-    keywords: ["content creation", "blogging", "youtube", "tiktok", "instagram", "social media", "influencer", "content marketing", "seo", "wordpress", "medium"],
-    urlPatterns: [/wordpress\.com/, /medium\.com/, /substack\.com/],
-    contentIndicators: ["content", "blog", "social media", "creator", "influencer"],
+    keywords: ["content creator", "blogging platform", "youtuber", "tiktok creator", "influencer marketing", "wordpress blog", "medium blog", "substack newsletter", "podcast hosting", "video creator"],
+    urlPatterns: [/wordpress\.com/, /medium\.com/, /substack\.com/, /anchor\.fm/, /buzzsprout\.com/],
+    contentIndicators: ["content creator", "blogging", "newsletter", "podcast hosting"],
     weight: 2
   },
 
   // News & Information
   {
     name: "Technology News",
-    keywords: ["tech news", "technology news", "gadgets", "innovation", "tech review", "product launch", "silicon valley", "startup", "venture capital"],
-    urlPatterns: [/techcrunch\.com/, /theverge\.com/, /wired\.com/, /arstechnica\.com/],
-    contentIndicators: ["tech", "technology", "innovation", "startup", "gadget"],
+    keywords: ["tech news", "technology news", "gadget review", "product launch", "silicon valley", "startup news", "venture capital", "tech industry"],
+    urlPatterns: [/techcrunch\.com/, /theverge\.com/, /wired\.com/, /arstechnica\.com/, /engadget\.com/, /gizmodo\.com/, /cnet\.com\/news/],
+    contentIndicators: ["tech news", "technology news", "product launch", "tech review"],
     weight: 2
   },
   {
     name: "Business News",
-    keywords: ["business news", "finance", "economy", "market", "stock", "investment", "corporate", "industry", "bloomberg", "wsj", "forbes"],
-    urlPatterns: [/bloomberg\.com/, /wsj\.com/, /forbes\.com/, /businessinsider\.com/],
-    contentIndicators: ["business", "finance", "market", "economy", "corporate"],
+    keywords: ["business news", "financial news", "stock market", "wall street", "bloomberg", "wsj", "forbes", "financial times", "economist", "market analysis"],
+    urlPatterns: [/bloomberg\.com/, /wsj\.com/, /forbes\.com/, /businessinsider\.com/, /ft\.com/, /economist\.com/, /cnbc\.com/],
+    contentIndicators: ["business news", "financial news", "stock market", "market analysis"],
     weight: 2
   },
   {
     name: "Science & Research",
-    keywords: ["science", "research", "physics", "chemistry", "biology", "space", "nasa", "astronomy", "climate", "environment", "academic", "paper"],
-    urlPatterns: [/nasa\.gov/, /nature\.com/, /science\.org/, /scientificamerican\.com/],
-    contentIndicators: ["research", "science", "study", "academic", "discovery"],
+    keywords: ["science news", "scientific discovery", "physics research", "chemistry research", "biology research", "space exploration", "nasa", "astronomy", "climate science", "environmental science"],
+    urlPatterns: [/nasa\.gov/, /nature\.com/, /science\.org/, /scientificamerican\.com/, /newscientist\.com/, /phys\.org/],
+    contentIndicators: ["science news", "scientific discovery", "space exploration", "climate science"],
     weight: 2
   },
   {
     name: "General News",
-    keywords: ["news", "breaking", "headline", "article", "blog", "journalism", "media", "press", "cnn", "bbc", "reuters", "nyt", "washington post"],
-    urlPatterns: [/cnn\.com/, /bbc\.com/, /nytimes\.com/, /reuters\.com/],
-    contentIndicators: ["news", "article", "breaking", "headline", "journalism"],
+    keywords: ["breaking news", "world news", "cnn", "bbc news", "reuters", "new york times", "washington post", "associated press", "news outlet"],
+    urlPatterns: [/cnn\.com/, /bbc\.com/, /bbc\.co\.uk/, /nytimes\.com/, /reuters\.com/, /apnews\.com/, /washingtonpost\.com/, /theguardian\.com/],
+    contentIndicators: ["breaking news", "world news", "news report", "current events"],
     weight: 2
   },
 
   // Shopping & Commerce
   {
     name: "E-commerce",
-    keywords: ["amazon", "ebay", "shop", "store", "buy", "price", "deal", "discount", "cart", "checkout", "marketplace", "retail", "purchase"],
-    urlPatterns: [/amazon\.com/, /ebay\.com/, /etsy\.com/, /shopify\.com/],
-    contentIndicators: ["buy", "price", "cart", "checkout", "shopping"],
+    keywords: ["online shopping", "online store", "buy online", "shopping cart", "checkout", "e-commerce", "shopify store", "aliexpress", "walmart online", "target online"],
+    urlPatterns: [/amazon\.com(?!.*aws)/, /shopify\.com/, /aliexpress\.com/, /walmart\.com/, /target\.com/],
+    contentIndicators: ["online shopping", "add to cart", "buy now", "e-commerce"],
+    exclusionPatterns: ["aws", "amazon web services", "cloud computing", "ec2", "s3 bucket", "lambda function"],
     weight: 3
   },
   {
     name: "Deals & Discounts",
-    keywords: ["deal", "discount", "coupon", "promo", "sale", "clearance", "black friday", "cyber monday", "flash sale", "bargain"],
-    urlPatterns: [/slickdeals\.net/, /deals\.reddit\.com/, /retailmenot\.com/],
-    contentIndicators: ["deal", "discount", "coupon", "sale", "bargain"],
+    keywords: ["discount code", "coupon code", "promo code", "black friday deals", "cyber monday deals", "flash sale", "clearance sale", "daily deals", "slickdeals", "retailmenot"],
+    urlPatterns: [/slickdeals\.net/, /retailmenot\.com/, /groupon\.com/, /honey\.com/, /rakuten\.com/],
+    contentIndicators: ["coupon code", "promo code", "discount code", "daily deals"],
     weight: 3
   },
   {
     name: "Marketplaces",
-    keywords: ["marketplace", "auction", "bid", "sell", "trade", "craigslist", "facebook marketplace", "offerup", "letgo"],
-    urlPatterns: [/craigslist\.org/, /facebook\.com\/marketplace/, /offerup\.com/],
-    contentIndicators: ["marketplace", "auction", "sell", "trade", "bid"],
-    weight: 2
+    keywords: ["online marketplace", "auction site", "classified ads", "craigslist", "facebook marketplace", "offerup", "letgo", "mercari", "poshmark", "ebay auction", "etsy handmade", "buy and sell online", "peer to peer marketplace"],
+    urlPatterns: [/ebay\.com/, /etsy\.com/, /craigslist\.org/, /facebook\.com\/marketplace/, /offerup\.com/, /mercari\.com/, /poshmark\.com/],
+    contentIndicators: ["online marketplace", "classified ads", "buy and sell", "local deals", "auction", "bid now", "handmade", "vintage"],
+    weight: 3
   },
   {
     name: "Product Reviews",
-    keywords: ["review", "rating", "comparison", "best", "top", "versus", "vs", "comparison", "unboxing", "product test"],
-    urlPatterns: [/cnet\.com/, /pcmag\.com/, /wirecutter\.com/],
-    contentIndicators: ["review", "rating", "comparison", "best", "versus"],
+    keywords: ["product review", "product comparison", "best products", "top rated", "product test", "unboxing", "wirecutter", "consumer reports", "buyer guide"],
+    urlPatterns: [/cnet\.com\/reviews/, /pcmag\.com\/reviews/, /wirecutter\.com/, /consumerreports\.org/, /rtings\.com/, /tomsguide\.com/],
+    contentIndicators: ["product review", "product comparison", "buyer guide", "top rated"],
     weight: 2
+  },
+
+  // Healthcare & Pharma (HIGH PRIORITY - check before Personal & Lifestyle)
+  {
+    name: "Pharmaceutical Companies",
+    keywords: ["pharma", "pharmaceutical", "drug", "medicine", "therapeutics", "clinical trials", "fda", "ema", "pipeline", "oncology", "immunology", "neurology", "cardiology", "vaccines", "biosimilar"],
+    urlPatterns: [/novartis\.com/, /pfizer\.com/, /roche\.com/, /merck\.com/, /johnson.*johnson/, /abbvie\.com/, /bristol.*myers/, /astrazeneca\.com/, /sanofi\.com/, /gsk\.com/, /glaxosmithkline/, /eli.*lilly/, /lilly\.com/, /bayer\.com/, /takeda\.com/, /amgen\.com/, /gilead\.com/, /biogen\.com/, /regeneron\.com/, /moderna\.com/],
+    contentIndicators: ["pharmaceutical", "drug development", "clinical trial", "therapy", "treatment", "patients"],
+    weight: 5
+  },
+  {
+    name: "Healthcare Providers",
+    keywords: ["hospital", "clinic", "medical center", "healthcare system", "patient care", "emergency", "surgery", "specialist"],
+    urlPatterns: [/mayo\.edu/, /clevelandclinic\.org/, /hopkinsmedicine\.org/, /stanfordhealthcare\.org/],
+    contentIndicators: ["patient", "appointment", "specialist", "treatment", "care"],
+    weight: 4
+  },
+  {
+    name: "Biotech & Research",
+    keywords: ["biotech", "biotechnology", "genomics", "gene therapy", "crispr", "molecular", "cell therapy", "research", "r&d"],
+    urlPatterns: [/genentech\.com/, /illumina\.com/, /thermofisher\.com/],
+    contentIndicators: ["research", "science", "discovery", "innovation", "clinical"],
+    weight: 4
   },
 
   // Personal & Lifestyle
   {
     name: "Health & Fitness",
-    keywords: ["health", "fitness", "workout", "exercise", "nutrition", "diet", "wellness", "mental health", "medical", "doctor", "hospital", "gym"],
-    urlPatterns: [/webmd\.com/, /mayoclinic\.org/, /nih\.gov/, /healthline\.com/],
-    contentIndicators: ["health", "fitness", "wellness", "medical", "exercise"],
+    keywords: ["fitness", "workout", "exercise", "nutrition", "diet", "wellness", "mental health", "gym", "yoga", "meditation", "weight loss"],
+    urlPatterns: [/webmd\.com/, /mayoclinic\.org/, /healthline\.com/, /myfitnesspal\.com/, /fitbit\.com/],
+    contentIndicators: ["fitness", "wellness", "exercise", "healthy", "workout"],
+    exclusionPatterns: ["pharmaceutical", "pharma", "drug", "clinical trial", "pipeline"],
     weight: 2
   },
   {
     name: "Travel & Leisure",
-    keywords: ["travel", "trip", "vacation", "hotel", "flight", "booking", "airbnb", "tripadvisor", "destination", "tour", "guide", "map"],
-    urlPatterns: [/booking\.com/, /airbnb\.com/, /tripadvisor\.com/, /expedia\.com/],
-    contentIndicators: ["travel", "trip", "destination", "accommodation", "booking"],
+    keywords: ["travel booking", "vacation planning", "hotel booking", "flight booking", "airbnb", "tripadvisor", "travel destination", "travel guide", "travel tips", "expedia", "kayak"],
+    urlPatterns: [/booking\.com/, /airbnb\.com/, /tripadvisor\.com/, /expedia\.com/, /kayak\.com/, /hotels\.com/, /vrbo\.com/, /skyscanner\.com/],
+    contentIndicators: ["travel booking", "vacation planning", "hotel booking", "flight deals"],
     weight: 2
   },
   {
     name: "Food & Cooking",
-    keywords: ["recipe", "cooking", "food", "baking", "cuisine", "restaurant", "chef", "ingredient", "meal", "dinner", "breakfast", "lunch"],
-    urlPatterns: [/allrecipes\.com/, /foodnetwork\.com/, /epicurious\.com/],
-    contentIndicators: ["recipe", "cooking", "food", "baking", "cuisine"],
+    keywords: ["recipe website", "cooking recipes", "baking recipes", "food blog", "cooking tips", "meal prep", "allrecipes", "food network", "epicurious", "bon appetit", "serious eats"],
+    urlPatterns: [/allrecipes\.com/, /foodnetwork\.com/, /epicurious\.com/, /bonappetit\.com/, /seriouseats\.com/, /tasty\.co/, /delish\.com/],
+    contentIndicators: ["recipe", "cooking tips", "meal prep", "food blog"],
     weight: 2
   },
   {
     name: "Home & Garden",
-    keywords: ["home", "garden", "gardening", "interior design", "diy", "home improvement", "decor", "furniture", "plant", "landscaping"],
-    urlPatterns: [/pinterest\.com/, /houzz\.com/, /thisoldhouse\.com/],
-    contentIndicators: ["home", "garden", "diy", "decor", "improvement"],
+    keywords: ["gardening", "interior design", "diy project", "home improvement", "home decor", "furniture", "landscaping", "lawn care", "renovation", "remodel"],
+    urlPatterns: [/houzz\.com/, /thisoldhouse\.com/, /hgtv\.com/, /lowes\.com/, /homedepot\.com/, /ikea\.com/, /wayfair\.com/],
+    contentIndicators: ["garden", "diy", "decor", "renovation", "furniture", "landscaping"],
+    exclusionPatterns: ["homepage", "home page", ".com/home", "go home", "work from home", "pharmaceutical", "pharma"],
+    requireWordBoundary: true,
     weight: 2
   },
   {
     name: "Personal Finance",
-    keywords: ["finance", "budget", "saving", "investment", "retirement", "debt", "credit", "banking", "money management", "financial planning"],
-    urlPatterns: [/nerdwallet\.com/, /investopedia\.com/, /bankrate\.com/],
-    contentIndicators: ["finance", "budget", "saving", "investment", "money"],
+    keywords: ["personal finance", "budgeting app", "savings account", "investment portfolio", "retirement planning", "debt management", "credit score", "financial planning", "money management", "nerdwallet", "mint app"],
+    urlPatterns: [/nerdwallet\.com/, /investopedia\.com/, /bankrate\.com/, /mint\.com/, /personalcapital\.com/, /creditkarma\.com/],
+    contentIndicators: ["personal finance", "budgeting", "savings", "retirement planning"],
     weight: 2
   }
 ];
+
+// Minimum score threshold to avoid weak matches
+const MIN_CATEGORY_SCORE = 4;
 
 export function guessCategoryNameFromBookmark(bookmark: {
   url: string;
@@ -339,11 +380,24 @@ export function guessCategoryNameFromBookmark(bookmark: {
 }): string {
   const text = `${bookmark.title} ${bookmark.url} ${bookmark.description || ""} ${bookmark.keywords?.join(" ") || ""}`.toLowerCase();
   const url = bookmark.url.toLowerCase();
+  const providedKeywords = bookmark.keywords || [];
 
   const categoryScores: Record<string, number> = {};
 
   for (const category of CATEGORY_KEYWORDS) {
     let score = 0;
+
+    // Check exclusion patterns first - if any match, skip this category
+    if (category.exclusionPatterns) {
+      let excluded = false;
+      for (const exclusion of category.exclusionPatterns) {
+        if (text.includes(exclusion.toLowerCase())) {
+          excluded = true;
+          break;
+        }
+      }
+      if (excluded) continue;
+    }
 
     // URL pattern matching (highest weight)
     if (category.urlPatterns) {
@@ -354,18 +408,50 @@ export function guessCategoryNameFromBookmark(bookmark: {
       }
     }
 
-    // Keyword matching
+    // Keyword matching with optional word boundary
     for (const keyword of category.keywords) {
       const keywordLower = keyword.toLowerCase();
-      if (text.includes(keywordLower)) {
-        score += category.weight;
+      if (category.requireWordBoundary) {
+        // Use word boundary matching
+        const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(keywordLower)}\\b`, 'i');
+        if (wordBoundaryRegex.test(text)) {
+          score += category.weight;
+        }
+      } else {
+        if (text.includes(keywordLower)) {
+          score += category.weight;
+        }
+      }
+    }
+
+    // SEMANTIC KEYWORD BOOST: Extra weight for provided semantic keywords
+    // These are pre-processed keywords with stop words removed
+    if (providedKeywords.length > 0) {
+      for (const providedKeyword of providedKeywords) {
+        const pkLower = providedKeyword.toLowerCase();
+        // Check if provided keyword matches category keywords
+        for (const catKeyword of category.keywords) {
+          if (catKeyword.toLowerCase().includes(pkLower) || 
+              pkLower.includes(catKeyword.toLowerCase())) {
+            score += 3 * category.weight; // Higher weight for semantic matches
+          }
+        }
+        // Check if provided keyword matches content indicators
+        if (category.contentIndicators) {
+          for (const indicator of category.contentIndicators) {
+            if (indicator.toLowerCase().includes(pkLower) ||
+                pkLower.includes(indicator.toLowerCase())) {
+              score += 2 * category.weight;
+            }
+          }
+        }
       }
     }
 
     // Content indicators (medium weight)
     if (category.contentIndicators) {
       for (const indicator of category.contentIndicators) {
-        if (text.includes(indicator)) {
+        if (text.includes(indicator.toLowerCase())) {
           score += 2 * category.weight;
         }
       }
@@ -411,8 +497,16 @@ export function guessCategoryNameFromBookmark(bookmark: {
         'bandcamp.com': 'Music & Audio',
         'music.apple.com': 'Music & Audio',
         'steam.com': 'Gaming',
+        'steampowered.com': 'Gaming',
+        'store.steampowered.com': 'Gaming',
         'epicgames.com': 'Gaming',
         'ign.com': 'Gaming',
+        'playstation.com': 'Gaming',
+        'xbox.com': 'Gaming',
+        'nintendo.com': 'Gaming',
+        'ea.com': 'Gaming',
+        'ubisoft.com': 'Gaming',
+        'blizzard.com': 'Gaming',
         'notion.so': 'Productivity Tools',
         'evernote.com': 'Productivity Tools',
         'todoist.com': 'Productivity Tools',
@@ -436,21 +530,47 @@ export function guessCategoryNameFromBookmark(bookmark: {
         'pubmed.ncbi.nlm.nih.gov': 'Academic Research',
         'arxiv.org': 'Academic Research',
         'amazon.com': 'E-commerce',
-        'ebay.com': 'E-commerce',
-        'etsy.com': 'E-commerce',
         'shopify.com': 'E-commerce',
+        'walmart.com': 'E-commerce',
+        'target.com': 'E-commerce',
+        'ebay.com': 'Marketplaces',
+        'etsy.com': 'Marketplaces',
+        'craigslist.org': 'Marketplaces',
+        'mercari.com': 'Marketplaces',
+        'poshmark.com': 'Marketplaces',
+        'offerup.com': 'Marketplaces',
         'slickdeals.net': 'Deals & Discounts',
         'retailmenot.com': 'Deals & Discounts',
-        'craigslist.org': 'Marketplaces',
-        'facebook.com': 'Marketplaces',
-        'offerup.com': 'Marketplaces',
+        'groupon.com': 'Deals & Discounts',
+        'honey.com': 'Deals & Discounts',
         'cnet.com': 'Product Reviews',
         'pcmag.com': 'Product Reviews',
         'wirecutter.com': 'Product Reviews',
         'webmd.com': 'Health & Fitness',
-        'mayoclinic.org': 'Health & Fitness',
-        'nih.gov': 'Health & Fitness',
         'healthline.com': 'Health & Fitness',
+        'myfitnesspal.com': 'Health & Fitness',
+        'fitbit.com': 'Health & Fitness',
+        // Healthcare & Pharma
+        'novartis.com': 'Pharmaceutical Companies',
+        'pfizer.com': 'Pharmaceutical Companies',
+        'roche.com': 'Pharmaceutical Companies',
+        'merck.com': 'Pharmaceutical Companies',
+        'abbvie.com': 'Pharmaceutical Companies',
+        'astrazeneca.com': 'Pharmaceutical Companies',
+        'sanofi.com': 'Pharmaceutical Companies',
+        'gsk.com': 'Pharmaceutical Companies',
+        'lilly.com': 'Pharmaceutical Companies',
+        'bayer.com': 'Pharmaceutical Companies',
+        'takeda.com': 'Pharmaceutical Companies',
+        'amgen.com': 'Pharmaceutical Companies',
+        'gilead.com': 'Pharmaceutical Companies',
+        'biogen.com': 'Pharmaceutical Companies',
+        'regeneron.com': 'Pharmaceutical Companies',
+        'moderna.com': 'Pharmaceutical Companies',
+        'mayoclinic.org': 'Healthcare Providers',
+        'clevelandclinic.org': 'Healthcare Providers',
+        'hopkinsmedicine.org': 'Healthcare Providers',
+        'nih.gov': 'Biotech & Research',
         'booking.com': 'Travel & Leisure',
         'airbnb.com': 'Travel & Leisure',
         'tripadvisor.com': 'Travel & Leisure',
@@ -492,12 +612,12 @@ export function guessCategoryNameFromBookmark(bookmark: {
     }
   }
 
-  // Find the category with the highest score
+  // Find the category with the highest score (must exceed minimum threshold)
   let bestCategory = "Other";
   let maxScore = 0;
 
   for (const [categoryName, score] of Object.entries(categoryScores)) {
-    if (score > maxScore) {
+    if (score > maxScore && score >= MIN_CATEGORY_SCORE) {
       maxScore = score;
       bestCategory = categoryName;
     }
@@ -506,11 +626,21 @@ export function guessCategoryNameFromBookmark(bookmark: {
   return bestCategory;
 }
 
-// Helper function to extract domain from URL
+// Helper function to escape special regex characters
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Helper function to extract domain from URL (strips www. prefix)
 function extractDomain(url: string): string | null {
   try {
     const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-    return urlObj.hostname;
+    let hostname = urlObj.hostname;
+    // Strip www. prefix for consistent matching
+    if (hostname.startsWith('www.')) {
+      hostname = hostname.substring(4);
+    }
+    return hostname;
   } catch {
     return null;
   }

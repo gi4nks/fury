@@ -1,33 +1,22 @@
 import { ScrapedMetadata } from './metadataScraper';
 import { guessCategoryNameFromBookmark, CATEGORY_KEYWORDS } from './categorization';
+import { 
+  processBookmarkText, 
+  getDomainHints,
+  STOP_WORDS 
+} from './textProcessor';
 
 export interface AIAnalysis {
   keywords: string[];
   summary: string;
   suggestedCategory: string;
   confidence?: number;
+  cleanedKeywords?: string[];  // Keywords after stop word removal
+  domainHints?: string[];      // Hints from URL structure
 }
 
-const STOP_WORDS = new Set([
-  "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"
-]);
-
-function extractKeywords(text: string, count: number = 8): string[] {
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(w => w.length > 2 && !STOP_WORDS.has(w));
-
-  const frequency: Record<string, number> = {};
-  for (const word of words) {
-    frequency[word] = (frequency[word] || 0) + 1;
-  }
-
-  return Object.entries(frequency)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, count)
-    .map(([word]) => word);
-}
+// Re-export STOP_WORDS for backward compatibility
+export { STOP_WORDS };
 
 export async function analyzeBookmark(
   url: string,
@@ -36,7 +25,16 @@ export async function analyzeBookmark(
   scraped: ScrapedMetadata | null
 ): Promise<AIAnalysis | null> {
   try {
-    // 1. Generate Summary with better content extraction
+    // 1. Process bookmark text with semantic extraction
+    const processed = processBookmarkText(url, title, description, {
+      metaTitle: scraped?.metaTitle,
+      metaDescription: scraped?.metaDescription,
+      ogTitle: scraped?.ogTitle,
+      ogDescription: scraped?.ogDescription,
+      bodyText: scraped?.bodyText
+    });
+
+    // 2. Generate Summary with better content extraction
     let summary = scraped?.ogDescription || scraped?.metaDescription || description || "";
     if (!summary && scraped?.bodyText) {
       // Extract meaningful content from body text
@@ -45,35 +43,43 @@ export async function analyzeBookmark(
       summary = sentences.slice(0, 2).join('. ').trim() + (sentences.length > 2 ? '...' : '');
     }
 
-    // 2. Enhanced Keyword Extraction
-    const textForKeywords = [
-      title,
-      description,
-      scraped?.metaTitle,
-      scraped?.metaDescription,
-      scraped?.ogTitle,
-      scraped?.ogDescription,
-      scraped?.bodyText?.substring(0, 1000) // Limit body text for performance
-    ].filter(Boolean).join(' ');
+    // 3. Get domain hints from URL structure
+    const domainHints = getDomainHints(url);
 
-    const keywords = extractKeywords(textForKeywords, 10);
+    // 4. Combine keywords from various sources
+    const combinedKeywords = [
+      ...processed.keywords,
+      ...processed.urlKeywords
+    ];
+    
+    // Deduplicate and limit
+    const uniqueKeywords = [...new Set(combinedKeywords)].slice(0, 15);
 
-    // 3. Intelligent Category Suggestion with URL analysis
+    // 5. Intelligent Category Suggestion with enhanced semantic understanding
     const suggestedCategory = guessCategoryNameFromBookmark({
       url,
-      title,
-      description: summary,
-      keywords
+      title: processed.cleanedTitle || title,
+      description: processed.cleanedDescription || summary,
+      keywords: uniqueKeywords
     });
 
-    // 4. Add confidence scoring for category suggestions
-    const categoryConfidence = calculateCategoryConfidence(url, title, description, keywords, suggestedCategory);
+    // 6. Add confidence scoring for category suggestions
+    const categoryConfidence = calculateCategoryConfidence(
+      url, 
+      title, 
+      description, 
+      uniqueKeywords, 
+      suggestedCategory,
+      domainHints
+    );
 
     return {
-      keywords,
+      keywords: uniqueKeywords,
       summary,
       suggestedCategory,
-      confidence: categoryConfidence
+      confidence: categoryConfidence,
+      cleanedKeywords: processed.keywords,
+      domainHints
     };
   } catch (error) {
     console.warn(`Local analysis failed for ${url}:`, (error as Error).message);
@@ -87,7 +93,8 @@ function calculateCategoryConfidence(
   title: string,
   description: string | undefined,
   keywords: string[],
-  category: string
+  category: string,
+  domainHints: string[] = []
 ): number {
   const text = `${title} ${url} ${description || ""} ${keywords.join(" ")}`.toLowerCase();
   let confidence = 0;
@@ -95,22 +102,61 @@ function calculateCategoryConfidence(
   // URL domain matching gives high confidence
   const domain = extractDomain(url);
   const highConfidenceDomains: Record<string, string[]> = {
-    'github.com': ['Web Development', 'AI & Machine Learning'],
+    'github.com': ['Web Development', 'AI & Machine Learning', 'Programming Tools'],
+    'gitlab.com': ['Web Development', 'Programming Tools'],
+    'bitbucket.org': ['Web Development', 'Programming Tools'],
     'youtube.com': ['Video Streaming'],
-    'spotify.com': ['Music'],
+    'spotify.com': ['Music & Audio'],
     'netflix.com': ['Video Streaming'],
-    'coursera.org': ['Education'],
-    'udemy.com': ['Education'],
+    'coursera.org': ['Online Courses', 'Education & Learning'],
+    'udemy.com': ['Online Courses', 'Education & Learning'],
     'figma.com': ['UI/UX Design'],
     'dribbble.com': ['UI/UX Design', 'Graphic Design'],
-    'notion.so': ['Productivity'],
-    'amazon.com': ['Shopping'],
-    'reddit.com': ['Social'],
-    'twitter.com': ['Social']
+    'behance.net': ['Graphic Design', 'Design & Creative'],
+    'notion.so': ['Productivity Tools'],
+    'amazon.com': ['E-commerce', 'Shopping & Commerce'],
+    'reddit.com': ['Content Creation', 'Entertainment & Media'],
+    'twitter.com': ['Content Creation', 'Entertainment & Media'],
+    'linkedin.com': ['Business & Productivity', 'Communication'],
+    'medium.com': ['Content Creation', 'News & Information'],
+    'stackoverflow.com': ['Programming Tutorials', 'Web Development'],
+    'aws.amazon.com': ['Cloud & DevOps'],
+    'azure.microsoft.com': ['Cloud & DevOps'],
+    'cloud.google.com': ['Cloud & DevOps'],
+    'novartis.com': ['Pharmaceutical Companies', 'Healthcare & Pharma'],
+    'pfizer.com': ['Pharmaceutical Companies', 'Healthcare & Pharma'],
+    'webmd.com': ['Health & Fitness'],
+    'mayoclinic.org': ['Healthcare Providers', 'Health & Fitness']
   };
 
   if (domain && highConfidenceDomains[domain]?.includes(category)) {
     confidence += 80;
+  }
+
+  // Domain hints boost confidence
+  const categoryHintMap: Record<string, string[]> = {
+    'development': ['Web Development', 'Mobile Development', 'Programming Tools'],
+    'programming': ['Web Development', 'Programming Tutorials', 'Technology & Development'],
+    'documentation': ['Web Development', 'Programming Tutorials'],
+    'blog': ['Content Creation', 'News & Information'],
+    'news': ['General News', 'Technology News', 'News & Information'],
+    'shopping': ['E-commerce', 'Shopping & Commerce', 'Deals & Discounts'],
+    'education': ['Online Courses', 'Education & Learning', 'Programming Tutorials'],
+    'gaming': ['Gaming', 'Entertainment & Media'],
+    'music': ['Music & Audio', 'Entertainment & Media'],
+    'video': ['Video Streaming', 'Video & Animation'],
+    'healthcare': ['Healthcare & Pharma', 'Health & Fitness', 'Pharmaceutical Companies'],
+    'finance': ['Personal Finance', 'Business & Productivity'],
+    'travel': ['Travel & Leisure', 'Personal & Lifestyle'],
+    'food': ['Food & Cooking', 'Personal & Lifestyle'],
+    'design': ['UI/UX Design', 'Graphic Design', 'Design & Creative'],
+    'cloud': ['Cloud & DevOps', 'Technology & Development']
+  };
+
+  for (const hint of domainHints) {
+    if (categoryHintMap[hint]?.includes(category)) {
+      confidence += 25;
+    }
   }
 
   // Keyword matches add confidence
@@ -126,8 +172,17 @@ function calculateCategoryConfidence(
     confidence += Math.min(keywordMatches * 15, 60); // Cap at 60 for keywords
   }
 
+  // Extracted keywords matching category keywords boost confidence
+  for (const extractedKeyword of keywords) {
+    if (categoryKeywords.some(ck => ck.toLowerCase().includes(extractedKeyword.toLowerCase()))) {
+      confidence += 10;
+    }
+  }
+
   // Title relevance adds confidence
-  if (title.toLowerCase().includes(category.toLowerCase().split(' ')[0])) {
+  const categoryFirstWord = category.toLowerCase().split(' ')[0];
+  if (title.toLowerCase().includes(categoryFirstWord) || 
+      keywords.some(k => k.toLowerCase().includes(categoryFirstWord))) {
     confidence += 20;
   }
 

@@ -98,6 +98,27 @@ Categorization System:
 - **Intelligent Matching**: Uses URL patterns, keyword analysis, content indicators, and weighted scoring
 - **AI Confidence Scoring**: Provides confidence levels (0-100) for categorization suggestions
 - **Domain Recognition**: Special handling for well-known platforms (GitHub, YouTube, Spotify, etc.)
+- **Exclusion Patterns**: Prevents false positives by excluding ambiguous keywords when context doesn't match
+- **Word Boundary Matching**: Uses regex word boundaries for precise keyword detection
+- **Semantic Keyword Boost**: Prioritizes semantically extracted keywords over raw text matches
+
+Text Processing System:
+- **Stop Word Removal**: 714 stop words covering English articles, pronouns, prepositions, web-specific terms, and UI elements
+- **Bigram Extraction**: Extracts meaningful two-word phrases (e.g., "machine learning", "open source")
+- **Domain Hints**: Extracts category hints from well-known domains (github.com → "development", spotify.com → "music")
+- **Semantic Keyword Extraction**: Removes noise words to improve AI categorization accuracy
+
+URL Validation:
+- **HEAD/GET Fallback**: Tries HEAD request first, falls back to GET if HEAD fails (many sites don't support HEAD)
+- **Internal URL Detection**: Skips localhost, 127.0.0.1, and common internal hostnames
+- **Realistic User-Agent**: Uses Chrome-like User-Agent for better compatibility
+- **Timeout Handling**: 5-second timeout to prevent hanging on slow servers
+
+Import System:
+- **Duplicate Prevention**: URL normalization and deduplication within import files
+- **Streaming Progress**: Server-Sent Events (SSE) for real-time import progress
+- **Progress Stages**: Parsing → Validating → Processing → Storing → Complete
+- **Live Counters**: Total, processed, new, updated, skipped (duplicates), failed
 </BuildInstructions>
 
 <ProjectLayout>
@@ -130,7 +151,13 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 
 Key Source Files:
 - src/app/page.tsx - Home dashboard with statistics
+- src/app/import/page.tsx - Import page with real-time progress tracking
 - src/lib/db.ts - Prisma client instance
+- src/lib/categorization.ts - Category matching with exclusion patterns and word boundaries
+- src/lib/textProcessor.ts - Semantic text processing, stop words, bigram extraction
+- src/lib/metadataScraper.ts - URL validation with HEAD/GET fallback
+- src/lib/aiAnalyzer.ts - AI-powered categorization using text processor
+- src/app/api/import/stream/route.ts - SSE streaming import endpoint
 - prisma/schema.prisma - Database schema with Bookmark and Category models
 
 Major Directories:

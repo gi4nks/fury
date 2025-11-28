@@ -5,13 +5,17 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 ## Features
 
 - 📥 **Import Chrome Bookmarks**: Parse and import HTML bookmark exports from Chrome
-- 🤖 **AI-Powered Categorization**: Automatically categorize bookmarks using OpenAI
+- 🤖 **AI-Powered Categorization**: Automatically categorize bookmarks using OpenAI with semantic text processing
 - 🔍 **Smart Search**: Search bookmarks by title, URL, description, or metadata
 - 📊 **Analytics Dashboard**: Visualize bookmark categories and metadata coverage
 - 🌐 **Metadata Enrichment**: Scrape Open Graph and meta tags from bookmark URLs
 - 📱 **Responsive Design**: Modern UI built with Tailwind CSS and DaisyUI
 - 🔒 **Privacy-First**: All data stored locally in SQLite database
 - 📤 **Export Functionality**: Export bookmarks in multiple formats (Chrome, Firefox, Safari)
+- 📈 **Real-time Import Progress**: Live progress tracking with Server-Sent Events (SSE)
+- 🧹 **Semantic Text Processing**: Stop word removal and keyword extraction for better categorization
+- 🔗 **Smart URL Validation**: Robust validation with HEAD/GET fallback and domain analysis
+- 🚫 **Duplicate Prevention**: Automatic deduplication during import with URL normalization
 
 ## Tech Stack
 
@@ -40,9 +44,10 @@ fury/
 │   └── lib/                # Core utilities
 │       ├── aiAnalyzer.ts   # AI categorization
 │       ├── bookmarkParser.ts # HTML parsing
-│       ├── categorization.ts # Category management
+│       ├── categorization.ts # Category management with exclusion patterns
 │       ├── db.ts           # Database client
-│       └── metadataScraper.ts # Web scraping
+│       ├── metadataScraper.ts # Web scraping with robust URL validation
+│       └── textProcessor.ts # Semantic text processing and stop word removal
 ├── prisma/                 # Database schema and migrations
 ├── public/                 # Static assets
 └── scripts/                # Build scripts
@@ -119,7 +124,14 @@ FURY_CHROME_SYNC_TOKEN=your_sync_token
 1. In Chrome: `chrome://bookmarks/` → Export bookmarks
 2. Save the HTML file
 3. In Fury: Visit `/import` → Upload the file
-4. Wait for AI categorization and metadata scraping
+4. Watch real-time progress with live counters for:
+   - Total bookmarks detected
+   - Currently processing bookmark
+   - New bookmarks added
+   - Updated existing bookmarks
+   - Skipped duplicates
+   - Failed validations
+5. AI categorization and metadata scraping run automatically
 
 ### Browse & Search
 
@@ -137,7 +149,8 @@ Use the export functionality to download bookmarks in various formats compatible
 
 - `GET/POST /api/bookmarks` - Bookmark CRUD operations
 - `GET/POST /api/categories` - Category management
-- `POST /api/import` - Import bookmarks from HTML
+- `POST /api/import` - Import bookmarks from HTML (standard)
+- `POST /api/import/stream` - Import with real-time progress via SSE
 - `GET /api/export` - Export bookmarks in various formats
 - `POST /api/init-db` - Initialize database
 
