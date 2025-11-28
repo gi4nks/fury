@@ -5,7 +5,11 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 ## Features
 
 - 📥 **Import Chrome Bookmarks**: Parse and import HTML bookmark exports from Chrome
-- 🤖 **AI-Powered Categorization**: Automatically categorize bookmarks using OpenAI with semantic text processing
+- 🤖 **AI-Powered Categorization**: Automatically categorize bookmarks using Gemini AI or OpenAI with semantic text processing
+- 🧠 **Custom Category Discovery**: AI analyzes your bookmarks and suggests personalized hierarchical categories (powered by Gemini 2.5 Flash)
+- 🌳 **Hierarchical Categories**: Support for up to 4 levels of category depth with 6-10 intelligent root categories
+- ✏️ **Interactive Category Editor**: Edit, add, delete, and reorganize categories with drag-and-drop hierarchy editor
+- 🏷️ **Keyword Management**: AI-generated keywords for each category with manual editing support
 - 🔍 **Smart Search**: Search bookmarks by title, URL, description, or metadata
 - 📊 **Analytics Dashboard**: Visualize bookmark categories and metadata coverage
 - 🌐 **Metadata Enrichment**: Scrape Open Graph and meta tags from bookmark URLs
@@ -13,7 +17,8 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 - 🔒 **Privacy-First**: All data stored locally in SQLite database
 - 📤 **Export Functionality**: Export bookmarks in multiple formats (Chrome, Firefox, Safari)
 - 📈 **Real-time Import Progress**: Live progress tracking with Server-Sent Events (SSE)
-- 🧹 **Semantic Text Processing**: Stop word removal and keyword extraction for better categorization
+- ⚡ **AI Batch Assignment**: Fast batch categorization of bookmarks using AI
+- 🧹 **Semantic Text Processing**: 714 stop words, bigram extraction, and keyword analysis
 - 🔗 **Smart URL Validation**: Robust validation with HEAD/GET fallback and domain analysis
 - 🚫 **Duplicate Prevention**: Automatic deduplication during import with URL normalization
 
@@ -22,7 +27,7 @@ Fury is a lightweight bookmark organizer that imports Chrome-exported HTML bookm
 - **Frontend**: Next.js 16, React 19, TypeScript
 - **Styling**: Tailwind CSS 4, DaisyUI
 - **Database**: SQLite with Prisma ORM
-- **AI**: OpenAI API for categorization and summarization
+- **AI**: Google Gemini 2.5 Flash (primary), OpenAI API (fallback) for categorization and discovery
 - **Build**: Turbopack, ESLint, TypeScript
 - **Deployment**: Ready for Vercel, Netlify, or any Node.js hosting
 
@@ -33,24 +38,36 @@ fury/
 ├── src/
 │   ├── app/                 # Next.js App Router pages
 │   │   ├── api/            # API routes
+│   │   │   ├── bookmarks/  # Bookmark CRUD
+│   │   │   ├── categories/ # Category management (incl. bulk, merge)
+│   │   │   ├── import/     # Import endpoints (standard, stream, analyze)
+│   │   │   └── export/     # Export functionality
 │   │   ├── bookmarks/      # Bookmarks page
 │   │   ├── categories/     # Categories page
-│   │   ├── import/         # Import page
+│   │   ├── import/         # Import page with category discovery
 │   │   └── metadata/       # Analytics page
 │   ├── components/         # React components
 │   │   ├── BookmarkList.tsx
 │   │   ├── ExportButton.tsx
-│   │   └── AnalyticsCharts.tsx
+│   │   ├── AnalyticsCharts.tsx
+│   │   ├── CategoryModeSelector.tsx  # Default vs Custom mode selection
+│   │   ├── DiscoveryProgress.tsx     # AI discovery progress indicator
+│   │   ├── HierarchyEditor.tsx       # Interactive category tree editor
+│   │   └── KeywordEditor.tsx         # Category keyword management
 │   └── lib/                # Core utilities
 │       ├── aiAnalyzer.ts   # AI categorization
 │       ├── bookmarkParser.ts # HTML parsing
 │       ├── categorization.ts # Category management with exclusion patterns
+│       ├── categoryDiscovery.ts # AI-powered category discovery
+│       ├── geminiClient.ts # Gemini AI API wrapper
+│       ├── hierarchyBuilder.ts # Category hierarchy utilities
+│       ├── keywordGenerator.ts # TF-IDF keyword extraction
 │       ├── db.ts           # Database client
 │       ├── metadataScraper.ts # Web scraping with robust URL validation
-│       └── textProcessor.ts # Semantic text processing and stop word removal
+│       └── textProcessor.ts # Semantic text processing (714 stop words)
 ├── prisma/                 # Database schema and migrations
 ├── public/                 # Static assets
-└── scripts/                # Build scripts
+└── scripts/                # Test scripts for categorization
 ```
 
 ## Getting Started
@@ -110,11 +127,14 @@ Run `make help` to see all available targets:
 Create a `.env` file with:
 
 ```env
-# Required for AI features
+# Primary AI (Gemini) - Required for custom category discovery
+GEMINI_API_KEY=your_gemini_api_key
+
+# Fallback AI (OpenAI) - Optional
 OPENAI_API_KEY=your_openai_api_key
 
-# Optional: Chrome extension sync
-FURY_CHROME_SYNC_TOKEN=your_sync_token
+# Database (auto-configured for SQLite)
+DATABASE_URL="file:./dev.db"
 ```
 
 ## Usage
@@ -124,14 +144,21 @@ FURY_CHROME_SYNC_TOKEN=your_sync_token
 1. In Chrome: `chrome://bookmarks/` → Export bookmarks
 2. Save the HTML file
 3. In Fury: Visit `/import` → Upload the file
-4. Watch real-time progress with live counters for:
+4. Choose category mode:
+   - **Default Categories**: Use 23 predefined categories for fast import
+   - **Custom Discovery**: Let AI analyze your bookmarks and suggest personalized categories
+5. If using Custom Discovery:
+   - AI analyzes bookmark titles, URLs, and folder structure
+   - Review and edit the suggested category hierarchy
+   - Customize keywords for each category
+   - Apply changes and import
+6. Watch real-time progress with live counters for:
+   - AI category assignment progress
    - Total bookmarks detected
-   - Currently processing bookmark
    - New bookmarks added
    - Updated existing bookmarks
    - Skipped duplicates
-   - Failed validations
-5. AI categorization and metadata scraping run automatically
+7. AI batch assignment runs automatically for fast categorization
 
 ### Browse & Search
 
@@ -149,8 +176,11 @@ Use the export functionality to download bookmarks in various formats compatible
 
 - `GET/POST /api/bookmarks` - Bookmark CRUD operations
 - `GET/POST /api/categories` - Category management
+- `POST /api/categories/bulk` - Bulk create/update categories with hierarchy
+- `POST /api/categories/merge` - Merge two categories together
 - `POST /api/import` - Import bookmarks from HTML (standard)
-- `POST /api/import/stream` - Import with real-time progress via SSE
+- `POST /api/import/stream` - Import with real-time progress via SSE and custom categories
+- `POST /api/import/analyze` - Analyze bookmarks and discover category hierarchy
 - `GET /api/export` - Export bookmarks in various formats
 - `POST /api/init-db` - Initialize database
 
